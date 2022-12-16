@@ -4,9 +4,35 @@ As part of a larger system, this subsystem is a minimal API responsible for repo
 
 The API is a minimal API approach -- no controllers, just straight up querying through the minimal API setup to a few different HTTP GETs.
 
+# How to Run
+
+Just check out the git repository, open the solution in Visual Studio, and run.  A browser window will appear with Swagger:
+
+![Swagger](img/Swagger.png)
+
+# How to Call
+
+1. Ensure the api's url is passed in to the calling app.  For debug, it's easy enough to add to launchSettings:
+
+```"LABWORK_API_URL": "https://localhost:7105"```
+
+1. 1. Follow instructions online to add the OpenApi to the app to call the api
+    1. After running the API in Swagger, copy the swagger.json to the calling app
+    2. In the Solution Explorer (I'm sure there's a command-line, too), through Connected Services, add the file from #1
+2. Then, after NSwag has generated the necessary code from the OpenApi/Swagger json, add code similar to the following:
+
+```
+var app = builder.Build();
+.
+:
+var apiUrl = builder.Configuration["LABWORK_API_URL"];
+var httpClient = new HttpClient();
+var client = new LabClient(apiUrl, httpClient);
+var labwork = await client.LabRecordsAsync();
+```
 
 
-## The System
+# The System
 
 Eventually, the overall system will consist of
 1. This API, providing information from database (instead of the current mocked data from json configuration file)
@@ -40,21 +66,21 @@ Note this API started off with the basic scaffolding/templates via dotnet/Visual
 
 ![Minimal Dependences](img/MinimalDependencies.png)
 
-# Details
+## Details
 
-## OpenAPI
+### OpenAPI
 
 Note that the swagger.json is currently manually copied to the UI project when the API changest. 
 
 There are [ways](https://techcommunity.microsoft.com/t5/healthcare-and-life-sciences/auto-regenerating-api-client-for-your-open-api-project/ba-p/3302390) to automate this.
 
-## Design
+### Design
 
 <mark>The design covers not only the actual apps -- the ui and api -- **BUT ALSO** the structure of the **repo**sitory, the **building**, the **testing**, the **publishing**, the **monitoring**.</mark>
 
 See "The System" above.
 
-### TESTING
+## TESTING
 
 Currently, only "integration" tests exist for the API, and no tests exist for the bare-bones UI.  
 

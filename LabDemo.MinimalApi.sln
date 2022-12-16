@@ -12,10 +12,13 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Documentation", "Documentat
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug - Container|Any CPU = Debug - Container|Any CPU
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{FBB68AB4-6A5A-4A7E-975B-AC59DA6CDAD1}.Debug - Container|Any CPU.ActiveCfg = Debug|Any CPU
+		{FBB68AB4-6A5A-4A7E-975B-AC59DA6CDAD1}.Debug - Container|Any CPU.Build.0 = Debug|Any CPU
 		{FBB68AB4-6A5A-4A7E-975B-AC59DA6CDAD1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{FBB68AB4-6A5A-4A7E-975B-AC59DA6CDAD1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FBB68AB4-6A5A-4A7E-975B-AC59DA6CDAD1}.Release|Any CPU.ActiveCfg = Release|Any CPU
