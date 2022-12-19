@@ -89,6 +89,8 @@ jobs:
     - name: Before-before
       run: |
         echo "repository = ${{ github.repository }}"
+        pwd
+        ls
     
 
     - name: Checkout
