@@ -77,7 +77,7 @@ namespace LabDemo.MinimalApi.Tests
         {
             var app = new LabApiAppForTesting();
             var client = app.CreateClient();
-            var request = new HttpRequestMessage(new HttpMethod("GET"), "/LabRecords/LabName?LabName=RBC");
+            var request = new HttpRequestMessage(new HttpMethod("GET"), "/LabRecords/Search?LabName=RBC");
             var response = await client.SendAsync(request);
 
             response.StatusCode.ShouldBe(HttpStatusCode.OK);
@@ -88,7 +88,7 @@ namespace LabDemo.MinimalApi.Tests
         {
             var app = new LabApiAppForTesting();
             var client = app.CreateClient();
-            var request = new HttpRequestMessage(new HttpMethod("GET"), "/LabRecords/LabName?LabName=RBC");
+            var request = new HttpRequestMessage(new HttpMethod("GET"), "/LabRecords/Search?LabName=RBC");
             var response = await client.SendAsync(request);
 
             var listLabwork = await response.Content.ReadFromJsonAsync<List<FlattenedLabRecord>>();
@@ -101,7 +101,7 @@ namespace LabDemo.MinimalApi.Tests
         {
             var app = new LabApiAppForTesting();
             var client = app.CreateClient();
-            var request = new HttpRequestMessage(new HttpMethod("GET"), "/LabRecords/LabName?LabName=FOO");
+            var request = new HttpRequestMessage(new HttpMethod("GET"), "/LabRecords/Search?LabName=FOO");
             var response = await client.SendAsync(request);
 
             var listLabwork = await response.Content.ReadFromJsonAsync<List<FlattenedLabRecord>>();
@@ -110,25 +110,14 @@ namespace LabDemo.MinimalApi.Tests
         }
 
         [Fact]
-        public async Task GetLabName_ShouldRespondBadRequest_WhenNoLabNameGiven()
+        public async Task GetLabName_ShouldRespondNotFound_WhenWrongFormat()
         {
             var app = new LabApiAppForTesting();
             var client = app.CreateClient();
             var request = new HttpRequestMessage(new HttpMethod("GET"), "/LabRecords/LabName");
             var response = await client.SendAsync(request);
 
-            response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
-        }
-
-        [Fact]
-        public async Task GetLabName_ShouldRespondOk_WhenDirectLabNameExists()
-        {
-            var app = new LabApiAppForTesting();
-            var client = app.CreateClient();
-            var request = new HttpRequestMessage(new HttpMethod("GET"), "/LabRecords?LabName=RBC");
-            var response = await client.SendAsync(request);
-
-            response.StatusCode.ShouldBe(HttpStatusCode.OK);
+            response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
         }
     }
 }

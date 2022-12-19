@@ -56,8 +56,6 @@ jobs:
 
     - name: After
       run: |
-        cd ..
-        ls
         echo "Total solution storage consumption before job for ${PWD}:" 
         du -sh ./*
         
