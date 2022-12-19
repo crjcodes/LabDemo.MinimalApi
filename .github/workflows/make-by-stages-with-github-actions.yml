@@ -7,9 +7,9 @@ run-name: ${{ github.actor }} is experimenting with GitHub actions 🚀
 on: [push]
 
 env:
-    SOLUTION: LabDemo.MinimalApi
-    PROJECT: LabDemo.MinimalApi
-    TEST_PROJECT: LabDemo.MinimalApi.Tests
+    _SOLUTION: LabDemo.MinimalApi
+    _PROJECT: LabDemo.MinimalApi
+    _TEST_PROJECT: LabDemo.MinimalApi.Tests
 
 jobs:
   build:
@@ -29,8 +29,7 @@ jobs:
     - name: Build the project
       run: |
         pwd
-        cd ../../$PROJECT
-        pwd
+        dotnet $_PROJECT
         dotnet build
 
   test:
@@ -53,7 +52,7 @@ jobs:
     - name: Run the black box tests
       run: |
         pwd
-        cd ../../$PROJECT
+        cd ../$TEST_PROJECT
         pwd
         cd $TEST_PROJECT
         dotnet test
