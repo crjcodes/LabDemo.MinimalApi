@@ -28,7 +28,9 @@ jobs:
         dotnet-version: 6.0.x
     - name: Build the project
       run: |
-        cd $PROJECT
+        pwd
+        cd ../../$PROJECT
+        pwd
         dotnet build
 
   test:
@@ -50,5 +52,8 @@ jobs:
         dotnet-version: 6.0.x
     - name: Run the black box tests
       run: |
+        pwd
+        cd ../../$PROJECT
+        pwd
         cd $TEST_PROJECT
         dotnet test
