@@ -10,7 +10,19 @@ namespace LabDemo.MinimalApi.Tests
 {
     internal class LabApiAppForTesting : WebApplicationFactory<Program>
     {
+        // TODO: override as necessary for testing any configuration of the builder or the app here
     }
+
+    // CONSIDER: this hits the api with a different mechanism than the actual app.  How effective/needed
+    // is this approach vs another?
+    //
+    // Under the hood, of course, it's the same http GET
+
+    // CONSIDER: how extensive should the integration testing be for this small API?
+    // Hint #1: it depends on how the API will be used (critical path, heavy load, security-conscious environment)
+    // Hint #2: it depends on the software development approach, e.g. TDD
+
+    // CONSIDER: what is the "unit" under test?  Here, in the integration testing, the "unit" is the API app
 
     public class BlackBoxTests
     { 
