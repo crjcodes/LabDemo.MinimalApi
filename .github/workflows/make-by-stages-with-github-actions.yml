@@ -7,9 +7,8 @@ run-name: ${{ github.actor }} is experimenting with GitHub actions 🚀
 on: [push]
 
 env:
-    _SOLUTION: LabDemo.MinimalApi
-    _PROJECT: LabDemo.MinimalApi
-    _TEST_PROJECT: LabDemo.MinimalApi.Tests
+    SOLUTION: LabDemo.MinimalApi
+    PROJECT: LabDemo.MinimalApi
 
 jobs:
   build:
@@ -17,20 +16,36 @@ jobs:
 
     runs-on: windows-latest
 
-    steps:
+    steps:       
     - name: Checkout
       uses: actions/checkout@v3
       with:
         fetch-depth: 0
+
     - name: Install .NET Core
       uses: actions/setup-dotnet@v3
       with:
         dotnet-version: 6.0.x
+
+    - name: Inputs
+      run: |
+        echo "SOLUTION = " $SOLUTION
+        echo "PROJECT = " PROJECT
+        echo "Running in..."
+        pwd
+        echo "Total storage consumption before job:" 
+        du -sh /* | sort -h
+
     - name: Build the project
       run: |
-        pwd
-        dotnet $_PROJECT
+        dotnet $PROJECT
         dotnet build
+
+    - name: Metrics
+      run: |
+        echo "Total storage consumption after job:" 
+        du -sh /* | sort -h
+        
 
   test:
     name: Black-box test the API
@@ -49,6 +64,15 @@ jobs:
       uses: actions/setup-dotnet@v3
       with:
         dotnet-version: 6.0.x
+
+    - name: Inputs
+      run: |
+        echo "TEST_PROJECT = " PROJECT
+        echo "Running in..."
+        pwd
+        echo "Total storage consumption before job:" 
+        du -sh /* | sort -h
+
     - name: Run the black box tests
       run: |
         pwd
@@ -56,3 +80,8 @@ jobs:
         pwd
         cd $TEST_PROJECT
         dotnet test
+
+    - name: Metrics
+      run: |
+        echo "Total storage consumption after job:" 
+        du -sh /* | sort -h
