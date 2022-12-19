@@ -1,16 +1,24 @@
-# Purpose
+# Overview
+## Purpose
 
 As part of a larger system, this subsystem is a minimal API responsible for reporting data. For demonstrative purposes, the data is mocked from medical bloodwork and comes in through the app configuration via a json file.
 
 The API is a minimal API approach -- no controllers, just straight up querying through the minimal API setup to a few different HTTP GETs.
 
-# How to Run
+## Tech Used
+
+- .NET 7
+- OpenApi
+- Minimal API
+- GitHub Actions
+
+## How to Run
 
 Just check out the git repository, open the solution in Visual Studio, and run.  A browser window will appear with Swagger:
 
 ![Swagger](img/Swagger.png)
 
-# How to Call
+## How to Call
 
 1. Ensure the api's url is passed in to the calling app.  For debug, it's easy enough to add to launchSettings:
 
@@ -48,15 +56,12 @@ Eventually, the overall system will consist of
 
 I chose to separate the api from the ui, instead of the usual minimal API approach of putting everything into the web front-end app -- sse *Separation of Concerns*
 
-## Tech Used
 
-- .NET 7
-- OpenApi
-- Minimal API
 
-(not a TDD project)
+## Details
 
-Note this API started off with the basic scaffolding/templates via dotnet/Visual Studio:
+### The Start
+This API started off with the basic scaffolding/templates via dotnet/Visual Studio:
 
 *Basic Template for ASP.NET Core Web Api without Docker Support (Yet)*
 
@@ -66,11 +71,9 @@ Note this API started off with the basic scaffolding/templates via dotnet/Visual
 
 ![Minimal Dependences](img/MinimalDependencies.png)
 
-## Details
-
 ### OpenAPI
 
-Note that the swagger.json is currently manually copied to the UI project when the API changest. 
+The swagger.json is currently manually copied to the UI project when the API changest. 
 
 There are [ways](https://techcommunity.microsoft.com/t5/healthcare-and-life-sciences/auto-regenerating-api-client-for-your-open-api-project/ba-p/3302390) to automate this.
 
