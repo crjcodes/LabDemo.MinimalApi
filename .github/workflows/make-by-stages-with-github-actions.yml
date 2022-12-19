@@ -74,6 +74,7 @@ jobs:
     defaults:
       run:
         shell: bash
+        working-directory: .
 
     runs-on: ubuntu-latest
 
@@ -86,45 +87,53 @@ jobs:
 
     steps:
 
-    - name: Before-before
-      run: |
-        echo "repository = ${{ github.repository }}"
-        pwd
-        ls
-    
-
     - name: Checkout
       uses: actions/checkout@v3
-      #with:
-      #  fetch-depth: 0
-
-    # TODO: only for debug
-    - name: Setup .NET Core SDK ${{ matrix.dotnet-version }}
-      uses: actions/setup-dotnet@v3
       with:
-        dotnet-version: ${{ matrix.dotnet-version }}
+        fetch-depth: 0
 
-    - name: Before
+    - name: Before-Before
       run: |
+        echo "owner-repo = ${GITHUB_REPOSITORY}"
+        echo "repository = ${{ github.repository }}"
+        echo "github workspace = ${GITHUB_WORKSPACE}"
         echo "SOLUTION = $SOLUTION"
+        echo "PROJECT = $PROJECT"
         echo "TEST_PROJECT = $TEST_PROJECT"
         echo "Running in ${PWD}"
         cd ..
+        echo "Listing ${PWD}"
         ls
         echo "Total solution storage consumption before job for ${PWD}:" 
         du -sh ./*
+        
+    ## TODO: only for debug
+    #- name: Setup .NET Core SDK ${{ matrix.dotnet-version }}
+    #  uses: actions/setup-dotnet@v3
+    #  with:
+    #    dotnet-version: ${{ matrix.dotnet-version }}
 
-    - name: Run the black box tests
-      run: |
-        pwd
-        cd ..
-        pwd
-        ls
-        cd $TEST_PROJECT
-        dotnet test
+    #- name: Before
+    #  run: |
+    #    echo "SOLUTION = $SOLUTION"
+    #    echo "TEST_PROJECT = $TEST_PROJECT"
+    #    echo "Running in ${PWD}"
+    #    cd ..
+    #    ls
+    #    echo "Total solution storage consumption before job for ${PWD}:" 
+    #    du -sh ./*
 
-    - name: After
-      run: |
-        cd ..
-        echo "Total solution storage consumption before job for ${PWD}:" 
-        du -sh ./*
+    #- name: Run the black box tests
+    #  run: |
+    #    pwd
+    #    cd ..
+    #    pwd
+    #    ls
+    #    cd $TEST_PROJECT
+    #    dotnet test
+
+    #- name: After
+    #  run: |
+    #    cd ..
+    #    echo "Total solution storage consumption before job for ${PWD}:" 
+    #    du -sh ./*
