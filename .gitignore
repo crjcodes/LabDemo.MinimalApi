@@ -27,6 +27,9 @@ x86/
 [Aa][Rr][Mm]/
 [Aa][Rr][Mm]64/
 bld/
+build/
+nuget/
+publish/
 [Bb]in/
 [Oo]bj/
 [Ll]og/
