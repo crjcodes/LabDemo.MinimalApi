@@ -35,27 +35,25 @@ jobs:
       with:
         dotnet-version: ${{ matrix.dotnet-version }}
 
-    - name: Inputs
+    - name: Before
       run: |
         echo "SOLUTION = $SOLUTION"
         echo "PROJECT = $PROJECT"
-        echo "Running in..."
-        pwd
-        cd ..
-        pwd
-        echo "Total solution storage consumption before job:" 
-        du -sh ./* | sort -h
+        echo "Running in ${PWD}"
+        echo "Total solution storage consumption before job for ${PWD}:" 
+        du -sh ./*
 
     - name: Build the project
       run: |
         pwd
         dotnet build
 
-    - name: Metrics
+    - name: After
       run: |
         echo "Total storage consumption after job:" 
-        pwd
-        du -sh ./* | sort -h
+        cd ..
+        echo "Total solution storage consumption before job for ${PWD}:" 
+        du -sh ./*
         
   #============================================================
   #  TEST STAGE
@@ -67,9 +65,7 @@ jobs:
     strategy:
       matrix:
         dotnet-version: ['7.x.x' ]
-
-    needs: [build]
-
+    
     env:
       TEST_PROJECT: LabDemo.MinimalApi.Tests
 
@@ -89,6 +85,7 @@ jobs:
     - name: Inputs
       run: |
         echo "TEST_PROJECT = $TEST_PROJECT"
+        cd ..
         echo "Running in..."
         pwd
         cd ..
@@ -100,8 +97,9 @@ jobs:
     - name: Run the black box tests
       run: |
         pwd
-        cd ../$TEST_PROJECT
+        cd ..
         pwd
+        ls
         cd $TEST_PROJECT
         dotnet test
 
