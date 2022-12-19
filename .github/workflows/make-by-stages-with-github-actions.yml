@@ -41,6 +41,7 @@ jobs:
         echo "PROJECT = $PROJECT"
         echo "Running in ${PWD}"
         cd ..
+        ls
         echo "Total solution storage consumption before job for ${PWD}:" 
         du -sh ./*
 
@@ -52,6 +53,7 @@ jobs:
     - name: After
       run: |
         cd ..
+        ls
         echo "Total solution storage consumption before job for ${PWD}:" 
         du -sh ./*
         
@@ -75,6 +77,7 @@ jobs:
       uses: actions/checkout@v3
       with:
         fetch-depth: 0
+        submodules: recursive
 
     # TODO: only for debug
     - name: Setup .NET Core SDK ${{ matrix.dotnet-version }}
