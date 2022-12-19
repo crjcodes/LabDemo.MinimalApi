@@ -41,16 +41,20 @@ jobs:
         echo "PROJECT = $PROJECT"
         echo "Running in..."
         pwd
+        cd ..
+        pwd
         echo "Total solution storage consumption before job:" 
-        du -sh ..
+        du -sh ./* | sort -h
 
     - name: Build the project
       run: |
+        pwd
         dotnet build
 
     - name: Metrics
       run: |
         echo "Total storage consumption after job:" 
+        pwd
         du -sh ./* | sort -h
         
   #============================================================
@@ -87,10 +91,11 @@ jobs:
         echo "TEST_PROJECT = $TEST_PROJECT"
         echo "Running in..."
         pwd
+        cd ..
         echo "Solution tree"
-        ls ..
+        ls
         echo "Total storage consumption before job:" 
-        du -sh ..
+        du -sh ./* | sort -h
 
     - name: Run the black box tests
       run: |
