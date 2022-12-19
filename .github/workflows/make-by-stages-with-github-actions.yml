@@ -104,8 +104,9 @@ jobs:
         echo "PROJECT = $PROJECT"
         echo "TEST_PROJECT = $TEST_PROJECT"
         echo "Running in ${PWD}"
-        cd ..
         echo "Listing ${PWD}"
+        ls
+        echo "Listing .."
         ls
         echo "Total solution storage consumption before job for ${PWD}:" 
         du -sh ./*
