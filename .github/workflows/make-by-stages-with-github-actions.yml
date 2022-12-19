@@ -11,10 +11,17 @@ env:
     PROJECT: LabDemo.MinimalApi
 
 jobs:
+
+  #============================================================
+  #  BUILD STAGE
+
   build:
     name: Build the API
 
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        dotnet-version: ['7.x.x' ]
 
     steps:       
     - name: Checkout
@@ -22,10 +29,11 @@ jobs:
       with:
         fetch-depth: 0
 
-    - name: Install .NET Core
+    # TODO: only for debug
+    - name: Setup .NET Core SDK ${{ matrix.dotnet-version }}
       uses: actions/setup-dotnet@v3
       with:
-        dotnet-version: 6.0.x
+        dotnet-version: ${{ matrix.dotnet-version }}
 
     - name: Inputs
       run: |
@@ -45,10 +53,16 @@ jobs:
         echo "Total storage consumption after job:" 
         du -sh ./* | sort -h
         
+  #============================================================
+  #  TEST STAGE
 
   test:
     name: Black-box test the API
     runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        dotnet-version: ['7.x.x' ]
 
     needs: [build]
 
@@ -56,20 +70,25 @@ jobs:
       TEST_PROJECT: LabDemo.MinimalApi.Tests
 
     steps:
+
     - name: Checkout
       uses: actions/checkout@v3
       with:
         fetch-depth: 0
-    - name: Install .NET Core
+
+    # TODO: only for debug
+    - name: Setup .NET Core SDK ${{ matrix.dotnet-version }}
       uses: actions/setup-dotnet@v3
       with:
-        dotnet-version: 6.0.x
+        dotnet-version: ${{ matrix.dotnet-version }}
 
     - name: Inputs
       run: |
         echo "TEST_PROJECT = $TEST_PROJECT"
         echo "Running in..."
         pwd
+        echo "Solution tree"
+        ls ..
         echo "Total storage consumption before job:" 
         du -sh ..
 
@@ -84,4 +103,4 @@ jobs:
     - name: Metrics
       run: |
         echo "Total storage consumption after job:" 
-        du -sh ./* | sort -h
+        du -sh ..
