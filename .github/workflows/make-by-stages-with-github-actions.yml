@@ -2,15 +2,20 @@
 run-name: ${{ github.actor }} is experimenting with GitHub actions 🚀
 on: [push]
 jobs:
-  MakeLabDemoMinimalApi:
-    runs-on: ubuntu-latest
+  build:
+    runs-on: windows-latest
+
+    env:
+      SOLUTION: LabDemo.MinimalApi
+      PROJECT: LabDemo.MinimalApi
+      TEST_PROJECT: LabDemo.MinimalApi.Tests
+
     steps:
-      - name: build
-        env:
-          PROJECT: LabDemo.MinimalApi
-        uses: actions/checkout@v3
-        run: |
-          echo "🎉 The job was automatically triggered by a ${{ github.event_name }} event."
-          echo "🐧 This job is now running on a ${{ runner.os }} server hosted by GitHub!"
-          echo "🔎 The name of your branch is ${{ github.ref }} and your repository is ${{ github.repository }}."
-          ls ${{ github.workspace }}
+    - name: Checkout
+      uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+    - name: Install .NET Core
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: 6.0.x

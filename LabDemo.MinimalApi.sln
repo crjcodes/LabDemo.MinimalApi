@@ -3,12 +3,19 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.4.33110.190
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LabDemo.MinimalApi", "LabDemo.MinimalApi\LabDemo.MinimalApi.csproj", "{FBB68AB4-6A5A-4A7E-975B-AC59DA6CDAD1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LabDemo.MinimalApi", "LabDemo.MinimalApi\LabDemo.MinimalApi.csproj", "{FBB68AB4-6A5A-4A7E-975B-AC59DA6CDAD1}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Documentation", "Documentation", "{17B0B1DE-7B08-4817-8FBC-43C2BF83F9C7}"
 	ProjectSection(SolutionItems) = preProject
 		README.md = README.md
 	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "CI-CD", "CI-CD", "{2649B06E-5C0B-4E96-80A7-9CACE12EF361}"
+	ProjectSection(SolutionItems) = preProject
+		.github\workflows\make-by-stages-with-github-actions.yml = .github\workflows\make-by-stages-with-github-actions.yml
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LabDemo.MinimalApi.Tests", "LabDemo.MinimalApi.Tests\LabDemo.MinimalApi.Tests.csproj", "{FEE0519C-FAA2-4473-9AB6-698162F61E22}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -23,6 +30,12 @@ Global
 		{FBB68AB4-6A5A-4A7E-975B-AC59DA6CDAD1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FBB68AB4-6A5A-4A7E-975B-AC59DA6CDAD1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FBB68AB4-6A5A-4A7E-975B-AC59DA6CDAD1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FEE0519C-FAA2-4473-9AB6-698162F61E22}.Debug - Container|Any CPU.ActiveCfg = Debug|Any CPU
+		{FEE0519C-FAA2-4473-9AB6-698162F61E22}.Debug - Container|Any CPU.Build.0 = Debug|Any CPU
+		{FEE0519C-FAA2-4473-9AB6-698162F61E22}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FEE0519C-FAA2-4473-9AB6-698162F61E22}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FEE0519C-FAA2-4473-9AB6-698162F61E22}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FEE0519C-FAA2-4473-9AB6-698162F61E22}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

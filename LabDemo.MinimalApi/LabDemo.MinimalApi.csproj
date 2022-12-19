@@ -12,4 +12,13 @@
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0" />
   </ItemGroup>
 
+	<ItemGroup>
+		<InternalsVisibleTo Include="LabDemo.MinimalAPI.Tests" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<Content Update="mockdata.json">
+			<CopyToPublishDirectory>Never</CopyToPublishDirectory>
+		</Content>
+	</ItemGroup>
 </Project>
