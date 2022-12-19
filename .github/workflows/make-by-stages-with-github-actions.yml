@@ -40,6 +40,7 @@ jobs:
         echo "SOLUTION = $SOLUTION"
         echo "PROJECT = $PROJECT"
         echo "Running in ${PWD}"
+        cd ..
         echo "Total solution storage consumption before job for ${PWD}:" 
         du -sh ./*
 
@@ -50,7 +51,6 @@ jobs:
 
     - name: After
       run: |
-        echo "Total storage consumption after job:" 
         cd ..
         echo "Total solution storage consumption before job for ${PWD}:" 
         du -sh ./*
@@ -82,17 +82,15 @@ jobs:
       with:
         dotnet-version: ${{ matrix.dotnet-version }}
 
-    - name: Inputs
+    - name: Before
       run: |
+        echo "SOLUTION = $SOLUTION"
         echo "TEST_PROJECT = $TEST_PROJECT"
+        echo "Running in ${PWD}"
         cd ..
-        echo "Running in..."
-        pwd
-        cd ..
-        echo "Solution tree"
         ls
-        echo "Total storage consumption before job:" 
-        du -sh ./* | sort -h
+        echo "Total solution storage consumption before job for ${PWD}:" 
+        du -sh ./*
 
     - name: Run the black box tests
       run: |
@@ -103,7 +101,8 @@ jobs:
         cd $TEST_PROJECT
         dotnet test
 
-    - name: Metrics
+    - name: After
       run: |
-        echo "Total storage consumption after job:" 
-        du -sh ..
+        cd ..
+        echo "Total solution storage consumption before job for ${PWD}:" 
+        du -sh ./*
