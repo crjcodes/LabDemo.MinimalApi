@@ -14,7 +14,7 @@ jobs:
   build:
     name: Build the API
 
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
 
     steps:       
     - name: Checkout
@@ -29,8 +29,8 @@ jobs:
 
     - name: Inputs
       run: |
-        echo "SOLUTION = " $SOLUTION
-        echo "PROJECT = " PROJECT
+        echo "SOLUTION = " $env:SOLUTION
+        echo "PROJECT = " $env:PROJECT
         echo "Running in..."
         pwd
         echo "Total storage consumption before job:" 
@@ -38,7 +38,6 @@ jobs:
 
     - name: Build the project
       run: |
-        dotnet $PROJECT
         dotnet build
 
     - name: Metrics
@@ -50,7 +49,7 @@ jobs:
   test:
     name: Black-box test the API
 
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
 
     env:
       TEST_PROJECT: LabDemo.MinimalApi.Tests
@@ -67,7 +66,7 @@ jobs:
 
     - name: Inputs
       run: |
-        echo "TEST_PROJECT = " PROJECT
+        echo "TEST_PROJECT = " $env:PROJECT
         echo "Running in..."
         pwd
         echo "Total storage consumption before job:" 
@@ -76,9 +75,9 @@ jobs:
     - name: Run the black box tests
       run: |
         pwd
-        cd ../$TEST_PROJECT
+        cd ../$env:TEST_PROJECT
         pwd
-        cd $TEST_PROJECT
+        cd $env:TEST_PROJECT
         dotnet test
 
     - name: Metrics
