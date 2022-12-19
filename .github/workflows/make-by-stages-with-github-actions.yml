@@ -29,12 +29,12 @@ jobs:
 
     - name: Inputs
       run: |
-        echo "SOLUTION = " $env:SOLUTION
-        echo "PROJECT = " $env:PROJECT
+        echo "SOLUTION = $env:SOLUTION"
+        echo "PROJECT = $env:PROJECT"
         echo "Running in..."
         pwd
         echo "Total storage consumption before job:" 
-        du -sh /* | sort -h
+        du -sh ./* | sort -h
 
     - name: Build the project
       run: |
@@ -43,7 +43,7 @@ jobs:
     - name: Metrics
       run: |
         echo "Total storage consumption after job:" 
-        du -sh /* | sort -h
+        du -sh ./* | sort -h
         
 
   test:
@@ -66,11 +66,11 @@ jobs:
 
     - name: Inputs
       run: |
-        echo "TEST_PROJECT = " $env:PROJECT
+        echo "TEST_PROJECT = $env:TEST_PROJECT"
         echo "Running in..."
         pwd
         echo "Total storage consumption before job:" 
-        du -sh /* | sort -h
+        du -sh ./* | sort -h
 
     - name: Run the black box tests
       run: |
@@ -83,4 +83,4 @@ jobs:
     - name: Metrics
       run: |
         echo "Total storage consumption after job:" 
-        du -sh /* | sort -h
+        du -sh ./* | sort -h
