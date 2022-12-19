@@ -1,13 +1,42 @@
-﻿name: LabDemo.MinimalApi.BuildByStages
+﻿# Barebones of continuous integration in stages
+
+# Much, much room for optimization and bringing closer to the real world
+
+name: LabDemo.MinimalApi.BuildByStages
 run-name: ${{ github.actor }} is experimenting with GitHub actions 🚀
 on: [push]
+
+env:
+    SOLUTION: LabDemo.MinimalApi
+    PROJECT: LabDemo.MinimalApi
+    TEST_PROJECT: LabDemo.MinimalApi.Tests
+
 jobs:
   build:
+    name: Build the API
+
+    runs-on: windows-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+    - name: Install .NET Core
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: 6.0.x
+    - name: Build the project
+      run: |
+        cd $PROJECT
+        dotnet build
+
+  test:
+    name: Black-box test the API
+
     runs-on: windows-latest
 
     env:
-      SOLUTION: LabDemo.MinimalApi
-      PROJECT: LabDemo.MinimalApi
       TEST_PROJECT: LabDemo.MinimalApi.Tests
 
     steps:
@@ -19,5 +48,7 @@ jobs:
       uses: actions/setup-dotnet@v3
       with:
         dotnet-version: 6.0.x
-    - name: dotnet validation
-      run: dotnet --version
+    - name: Run the black box tests
+      run: |
+        cd $TEST_PROJECT
+        dotnet test
