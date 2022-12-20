@@ -192,10 +192,6 @@ jobs:
       run: |
         echo "default working directory, ${PWD}:"
         ls
-        cd ..
-        echo "up one level"
-        pwd
-        ls
         echo "and in the build dir:"
         ls build
 
