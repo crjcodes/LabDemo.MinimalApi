@@ -103,9 +103,8 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v3
       
-    # TODO: only for debug
-    - name: Setup .NET Core SDK ${{ matrix.dotnet-version }}
-      uses: actions/setup-dotnet@v3
+    - name: Set up .NET Core
+      uses: actions/setup-dotnet@v1
       with:
         dotnet-version: ${{ matrix.dotnet-version }}
 
@@ -146,7 +145,6 @@ jobs:
     defaults:
       run:
         shell: bash
-#        working-directory: .
 
     runs-on: ubuntu-latest
 
@@ -158,42 +156,40 @@ jobs:
         
     steps:
 
-      - uses: actions/checkout@v2
+    - name: Checkout
+      uses: actions/checkout@v3
 
-      - name: Set up .NET Core
-        uses: actions/setup-dotnet@v1
-        with:
-          dotnet-version: '7.x'
-          include-prerelease: true
+    - name: Set up .NET Core
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: ${{ matrix.dotnet-version }}
 
-      - name: Download api build artifacts for speed optimization
-        uses: actions/download-artifact@v3
-        with: 
-          name: api-build-output
-          path: ../build
+    - name: Download api build artifacts for speed optimization
+      uses: actions/download-artifact@v3
+      with: 
+        name: api-build-output
+        path: ../build
 
-      - name: Check artifact download
-        run: pwd; ls; ls ../build
+    - name: Check artifact download
+      run: pwd; ls; ls ../build
 
-      # Optimized by using the output from the previous build job, which includes
-      # not only the nuget dependencies, but the binaries for the api
+    # Optimized by using the output from the previous build job, which includes
+    # not only the nuget dependencies, but the binaries for the api
 
-      - name: Publish the API
-        run: |
-          pwd
-          cd $PROJECT
-          dotnet publish -c Release -o ../publish --source ../build
+    - name: Publish the API
+      run: |
+        dotnet publish -c Release -o ../publish --source ../build
 
-      - name: After
-        run: |
-          echo "Total solution storage consumption before job for ${PWD}:" 
-          du -sh ./*
+    - name: After
+      run: |
+        echo "Total solution storage consumption before job for ${PWD}:" 
+        du -sh ./*
 
-      - name: Upload artifact for deployment job
-        uses: actions/upload-artifact@v2
-        with:
-          name: ${PROJECT}
-          path: ../publish
+    - name: Upload artifact for deployment job
+      uses: actions/upload-artifact@v2
+      with:
+        name: ${PROJECT}
+        path: ../publish
 
   #============================================================
   #  DEPLOY STAGE
