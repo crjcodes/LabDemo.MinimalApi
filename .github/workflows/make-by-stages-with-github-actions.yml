@@ -202,7 +202,6 @@ jobs:
         echo "PROJECT = ${PROJECT}"
         cd $PROJECT
         pwd
-        ls ../publish
         ls ../build
         dotnet publish -c Release -o ../publish --source ../build
 
