@@ -1,6 +1,11 @@
-﻿# Barebones of continuous integration in stages
-
+﻿###########################################################################################
+#
+# Barebones of continuous integration in stages
+#
 # Much, much room for optimization and bringing closer to the real world
+#
+# TODO: add note about PATHING
+#
 
 name: LabDemo.MinimalApi.BuildByStages
 run-name: ${{ github.actor }} is experimenting with GitHub actions 🚀
@@ -171,13 +176,23 @@ jobs:
         path: ../build
 
     - name: Check artifact download
-      run: pwd; ls; ls ../build
+      run: |
+        echo "default working directory, ${PWD}:"
+        ls
+        cd ..
+        echo "up one level, ${PWD}:"
+        ls
+        echo "and in the build dir:"
+        ls build
 
     # Optimized by using the output from the previous build job, which includes
     # not only the nuget dependencies, but the binaries for the api
 
     - name: Publish the API
       run: |
+        echo "default working directory, ${PWD}"
+        echo "up one level, ${PWD}:"
+        ls
         dotnet publish -c Release -o ../publish --source ../build
 
     - name: After
