@@ -4,8 +4,18 @@
 #
 # Much, much room for optimization and bringing closer to the real world
 #
-# TODO: add note about PATHING
+# PATHING
+#   Note if an app's project name is the same as a solution name, it can be confusing
 #
+#   GitHub checks out the repo into `/home/runner/work/{GithubProjectName}/{YourRepoName}`
+#
+#   So, this could lead to building a project of the same name in a directory like
+#       `/home/runner/work/TheLarryApp/TheLarryApp/TheLarryApp`
+#
+#   Matching the `/home/runner/work/{GithubProjectName}` supplied by the GitAction checkout
+#       then the repo name, `/home/runner/work/{GitHubProjectName}/{YourRepoName}` where the sln lives
+#       then perhaps the project, `/home/runner/work/{GitHubProjectName}/{YourRepoName}/{YourProjectName}`
+#           containing `csproj`
 
 name: LabDemo.MinimalApi.BuildByStages
 run-name: ${{ github.actor }} is experimenting with GitHub actions 🚀
@@ -191,17 +201,10 @@ jobs:
 
     - name: Publish the API
       run: |
-        echo "default working directory, ${PWD}:"
-        ls
-        cd ..
-        echo "up one level"
-        pwd
-        ls
-        echo "and in the build dir:"
-        ls build
+        echo "default working directory, ${PWD}"
         echo "PROJECT = ${PROJECT}"
         cd $PROJECT
-        pwd
+        echo "project now working directory, ${PWD}"
         ls ../build
         dotnet publish -c Release -o ../publish --source ../build
 
