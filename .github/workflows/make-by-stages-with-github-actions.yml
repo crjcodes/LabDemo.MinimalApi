@@ -16,6 +16,12 @@
 #       then the repo name, `/home/runner/work/{GitHubProjectName}/{YourRepoName}` where the sln lives
 #       then perhaps the project, `/home/runner/work/{GitHubProjectName}/{YourRepoName}/{YourProjectName}`
 #           containing `csproj`
+#
+# DEPENDENCIES
+#
+#   When trying to leverage dependencies collected in a previous dotnet step, the only way to confirm that the 
+#   current dotnet step is pointed at those existing dependencies is VISUAL INSPECTION.  So far, I have not 
+#   identified any other way
 
 name: LabDemo.MinimalApi.BuildByStages
 run-name: ${{ github.actor }} is experimenting with GitHub actions 🚀
@@ -50,20 +56,17 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v3
 
-    # TODO: only for debug
-    - name: Setup .NET Core SDK ${{ matrix.dotnet-version }}
+    - name: Set up .NET Core
       uses: actions/setup-dotnet@v3
       with:
         dotnet-version: ${{ matrix.dotnet-version }}
 
     - name: Before
-#      working-directory: .
       run: |
         echo "SOLUTION = $SOLUTION"
         echo "PROJECT = $PROJECT"
         echo "Total solution storage consumption before job for ${PWD}:" 
         du -sh ./*
-
 
     # The custom location of nuget packages is in place for later optimizations if
     # dependencies grow, when runner storage or job speeds become a concern
@@ -119,7 +122,7 @@ jobs:
       uses: actions/checkout@v3
       
     - name: Set up .NET Core
-      uses: actions/setup-dotnet@v1
+      uses: actions/setup-dotnet@v3
       with:
         dotnet-version: ${{ matrix.dotnet-version }}
 
@@ -135,10 +138,10 @@ jobs:
       uses: actions/download-artifact@v3
       with: 
         name: api-build-output
-        path: ../build
+        path: ./build
 
     - name: Check artifact download
-      run: pwd; ls; ls ../build
+      run: pwd; ls; ls build
 
     - name: Run the black box tests
       run: |
@@ -175,7 +178,7 @@ jobs:
       uses: actions/checkout@v3
 
     - name: Set up .NET Core
-      uses: actions/setup-dotnet@v1
+      uses: actions/setup-dotnet@v3
       with:
         dotnet-version: ${{ matrix.dotnet-version }}
 
@@ -183,7 +186,7 @@ jobs:
       uses: actions/download-artifact@v3
       with: 
         name: api-build-output
-        path: ../build
+        path: build
 
     - name: Check artifact download
       run: |
@@ -232,7 +235,7 @@ jobs:
 
     runs-on: ubuntu-latest
 
-    needs: [build, test]    
+    needs: [publish]    
 
     environment:
       name: 'production'
