@@ -42,7 +42,7 @@ jobs:
         dotnet-version: ${{ matrix.dotnet-version }}
 
     - name: Before
-      working-directory: .
+#      working-directory: .
       run: |
         echo "SOLUTION = $SOLUTION"
         echo "PROJECT = $PROJECT"
@@ -116,7 +116,7 @@ jobs:
         echo "Running in ${PWD}"
         echo "Total solution storage consumption before job for ${PWD}:" 
         du -sh ./*
-
+        g
     - name: Download api build artifacts for speed optimization
       uses: actions/download-artifact@v3
       with: 
@@ -150,7 +150,7 @@ jobs:
     defaults:
       run:
         shell: bash
-        working-directory: .
+#        working-directory: .
 
     runs-on: ubuntu-latest
 
@@ -206,7 +206,7 @@ jobs:
     defaults:
       run:
         shell: bash
-        working-directory: .
+#        working-directory: .
 
     runs-on: ubuntu-latest
 
