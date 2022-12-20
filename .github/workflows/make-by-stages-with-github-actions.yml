@@ -116,7 +116,7 @@ jobs:
         echo "Running in ${PWD}"
         echo "Total solution storage consumption before job for ${PWD}:" 
         du -sh ./*
-        g
+        
     - name: Download api build artifacts for speed optimization
       uses: actions/download-artifact@v3
       with: 
