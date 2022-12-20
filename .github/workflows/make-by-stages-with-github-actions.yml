@@ -121,7 +121,7 @@ jobs:
       uses: actions/download-artifact@v3
       with: 
         name: api-build-output
-        path: ./build
+        path: ../build
 
     - name: Check artifact download
       run: ls; ls build
@@ -174,7 +174,8 @@ jobs:
       - name: Download api build artifacts for speed optimization
         uses: actions/download-artifact@v3
         with: 
-          name: api-build-output
+            name: api-build-output
+            path: ../build
 
       - name: Check artifact download
         run: ls; ls build
