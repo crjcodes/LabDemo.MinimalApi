@@ -178,13 +178,14 @@ jobs:
             path: ../build
 
       - name: Check artifact download
-        run: ls; ls build
+        run: pwd; ls; ls ..\build
 
       # Optimized by using the output from the previous build job, which includes
       # not only the nuget dependencies, but the binaries for the api
 
       - name: Publish the API
         run: |
+          pwd
           cd $PROJECT
           dotnet publish -c Release -o ../publish --source ../build
 
