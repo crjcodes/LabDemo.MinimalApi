@@ -180,7 +180,8 @@ jobs:
         echo "default working directory, ${PWD}:"
         ls
         cd ..
-        echo "up one level, ${PWD}:"
+        echo "up one level"
+        pwd
         ls
         echo "and in the build dir:"
         ls build
@@ -190,9 +191,19 @@ jobs:
 
     - name: Publish the API
       run: |
-        echo "default working directory, ${PWD}"
-        echo "up one level, ${PWD}:"
+        echo "default working directory, ${PWD}:"
         ls
+        cd ..
+        echo "up one level"
+        pwd
+        ls
+        echo "and in the build dir:"
+        ls build
+        echo "PROJECT = ${PROJECT}"
+        cd $PROJECT
+        pwd
+        ls ../publish
+        ls ../build
         dotnet publish -c Release -o ../publish --source ../build
 
     - name: After
