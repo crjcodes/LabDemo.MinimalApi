@@ -19,7 +19,7 @@ jobs:
   #
 
   build:
-    name: Build the API
+    name: Build API
 
     # Use the Bash shell regardless whether the GitHub Actions runner is ubuntu-latest, macos-latest, or windows-latest
     defaults:
@@ -60,6 +60,8 @@ jobs:
         cd $PROJECT
         dotnet restore --packages ../nuget
         dotnet build -c Release --no-incremental --no-restore --source ../nuget -o ../build
+        cd ..
+        ls build
 
    # The nuget packages can be cached for another workflow run, for optimization
    # In this case, the app has minimal dependencies, so not important to cache
@@ -68,7 +70,8 @@ jobs:
       uses: actions/upload-artifact@v3
       with:
         name: api-build-output
-        path: ./build
+        path: build
+        retention-days: 1
 
     - name: After
       run: |
@@ -79,7 +82,7 @@ jobs:
   #  TEST STAGE
 
   test:
-    name: Black-box test the API
+    name: API Black-Box Testing
 
     # Use the Bash shell regardless whether the GitHub Actions runner is ubuntu-latest, macos-latest, or windows-latest
     defaults:
