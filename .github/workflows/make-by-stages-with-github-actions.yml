@@ -139,13 +139,8 @@ jobs:
   #============================================================
   #  PUBLISH STAGE
 
-
-  # FUTURE:
-  # Right now, this repeats steps done in previous stages on purpose
-  # Later, optimize by caching nuget dependencies and either caching or artifacting the build output
-
   publish:
-    name: Create the final product/output to deploy
+    name: Publish the API
 
     # Use the Bash shell regardless whether the GitHub Actions runner is ubuntu-latest, macos-latest, or windows-latest
     defaults:
@@ -174,11 +169,11 @@ jobs:
       - name: Download api build artifacts for speed optimization
         uses: actions/download-artifact@v3
         with: 
-            name: api-build-output
-            path: ../build
+          name: api-build-output
+          path: ../build
 
       - name: Check artifact download
-        run: pwd; ls; ls ..\build
+        run: pwd; ls; ls ../build
 
       # Optimized by using the output from the previous build job, which includes
       # not only the nuget dependencies, but the binaries for the api
