@@ -34,9 +34,6 @@ jobs:
     steps:       
     - name: Checkout
       uses: actions/checkout@v3
-      #with:
-      #  fetch-depth: 0
-      #  submodules: recursive
 
     # TODO: only for debug
     - name: Setup .NET Core SDK ${{ matrix.dotnet-version }}
@@ -52,27 +49,26 @@ jobs:
         echo "Total solution storage consumption before job for ${PWD}:" 
         du -sh ./*
 
+
+    # The custom location of nuget packages is in place for later optimizations if
+    # dependencies grow, when runner storage or job speeds become a concern
+
+    # The custom build location is cached for use by the test job
+
     - name: Build the project
       run: |        
         cd $PROJECT
-        dotnet restore --packages ..\nuget
-        dotnet build -c Release --no-incremental --no-restore --source ..\nuget -o ..\build
+        dotnet restore --packages ../nuget
+        dotnet build -c Release --no-incremental --no-restore --source ../nuget -o ../build
 
-    - name: TODO-cache-dependencies
-      id: cache-nuget-dependencies
-      uses: actions/cache@v3
-      env:
-        cache_name: cache-node-modules
+   # The nuget packages can be cached for another workflow run, for optimization
+   # In this case, the app has minimal dependencies, so not important to cache
+
+    - name: Pass the build on to other jobs
+      uses: actions/upload-artifact@v3
       with:
-        path: ./nuget
-        key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}
-        restore-keys: |
-          ${{ runner.os }}-build-${{ env.cache-name }}-
-          ${{ runner.os }}-build-
-          ${{ runner.os }}-
-
-    - name: TODO-cache-dependencies
-      run: echo "TODO cache build"
+        name: api-build-output
+        path: ./build
 
     - name: After
       run: |
@@ -106,8 +102,6 @@ jobs:
 
     - name: Checkout
       uses: actions/checkout@v3
-      #with:
-      #  fetch-depth: 0
       
     # TODO: only for debug
     - name: Setup .NET Core SDK ${{ matrix.dotnet-version }}
@@ -123,10 +117,18 @@ jobs:
         echo "Total solution storage consumption before job for ${PWD}:" 
         du -sh ./*
 
+    - name: Download api build artifacts for speed optimization
+      uses: actions/download-artifact@v3
+      with: 
+        name: api-build-output
+
+    - name: Check artifact download
+      run: ls; ls build
+
     - name: Run the black box tests
       run: |
         cd $TEST_PROJECT
-        dotnet test
+        dotnet test -c Release -o ../build
 
     - name: After
       run: |
@@ -142,7 +144,7 @@ jobs:
   # Later, optimize by caching nuget dependencies and either caching or artifacting the build output
 
   publish:
-    name: Black-box test the API
+    name: Create the final product/output to deploy
 
     # Use the Bash shell regardless whether the GitHub Actions runner is ubuntu-latest, macos-latest, or windows-latest
     defaults:
@@ -168,18 +170,48 @@ jobs:
           dotnet-version: '7.x'
           include-prerelease: true
 
-      - name: dotnet publish
-        run: dotnet publish -c Release -o ${{env.DOTNET_ROOT}}/publish
+      - name: Download api build artifacts for speed optimization
+        uses: actions/download-artifact@v3
+        with: 
+          name: api-build-output
+
+      - name: Check artifact download
+        run: ls; ls build
+
+      # Optimized by using the output from the previous build job, which includes
+      # not only the nuget dependencies, but the binaries for the api
+
+      - name: Publish the API
+        run: |
+          cd $PROJECT
+          dotnet publish -c Release -o ../publish --source ../build
+
+      - name: After
+        run: |
+          echo "Total solution storage consumption before job for ${PWD}:" 
+          du -sh ./*
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v2
         with:
           name: ${PROJECT}
-          path: ${{env.DOTNET_ROOT}}/publish
+          path: ../publish
 
-  deploy:
+  #============================================================
+  #  DEPLOY STAGE
+
+  deploy-azure:
+    name: Deploy to Azure
+
+    defaults:
+      run:
+        shell: bash
+        working-directory: .
+
     runs-on: ubuntu-latest
-    needs: build
+
+    needs: [build, test]    
+
     environment:
       name: 'production'
       url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
