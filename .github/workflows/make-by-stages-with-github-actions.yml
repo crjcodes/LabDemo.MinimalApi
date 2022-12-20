@@ -124,7 +124,7 @@ jobs:
         path: ../build
 
     - name: Check artifact download
-      run: ls; ls build
+      run: pwd; ls; ls ../build
 
     - name: Run the black box tests
       run: |
