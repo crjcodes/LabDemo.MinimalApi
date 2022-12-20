@@ -121,6 +121,7 @@ jobs:
       uses: actions/download-artifact@v3
       with: 
         name: api-build-output
+        path: ./build
 
     - name: Check artifact download
       run: ls; ls build
