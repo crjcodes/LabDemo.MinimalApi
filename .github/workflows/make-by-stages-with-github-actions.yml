@@ -91,6 +91,8 @@ jobs:
         echo "SOLUTION = $SOLUTION"
         echo "PROJECT = $PROJECT"
         echo "NUGET CACHE KEY = " ${{ runner.os }}-nuget-${{ hashFiles('*/*.csproj') }}
+        echo "NUGET_SOURCE = $NUGET_SOURCE"
+        echo "NUGET PATH = $NUGET_PATH"
         echo "Total solution storage consumption before job for ${PWD}:" 
         du -sh ./*
 
@@ -100,12 +102,14 @@ jobs:
     - name: Load
       run: |
         dotnet restore --source $NUGET_SOURCE --packages $NUGET_PATH
+        ls .
+        ls $NUGET_PATH
 
     - name: Cache .NET packages
       id: cache-nuget
       uses: actions/cache@v3
       with:
-        path: ./$NUGET_PATH
+        path: $NUGET_PATH
         key: ${{ runner.os }}-nuget-${{ hashFiles('*/*.csproj') }}
        
     - name: Check caching
