@@ -58,7 +58,6 @@ env:
     N3: ${GITHUB_SHA}
     N4: "$env.GITHUB_SHA"
     N5: ${{ github.sha }}
-    N6: ${{ env.GITHUB_SHA }}
 
 jobs:
   fix_sha:
