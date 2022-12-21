@@ -1,0 +1,66 @@
+#!/usr/bin/sh
+#
+
+SOLUTION=LabDemo.MinimalApi
+PROJECT=LabDemo.MinimalApi
+NUGET_SOURCE=https://api.nuget.org/v3/index.json
+NUGET_PATH=.nuget
+
+echo "CI support script"
+echo "Argument: $1"
+
+help()
+{
+  echo "Usage: ci [ -a|b|c|h|l|p|t|r ] 
+        Description:
+                -a  complete all ci steps
+                -b  perform the dotnet build step
+                -c  clean
+                -h  help
+                -l  list the size of the root directory and subfolders
+                -p  publish the app to the folder
+                -t  run the tests for the app
+                  "
+  exit 2
+}
+
+all()
+{
+  echo ">all"
+  clean
+  build
+  test
+}
+
+build()
+{
+  echo ">build"
+}
+
+list()
+{
+  echo ">clean"
+}
+
+test()
+{
+  echo ">test"
+}
+
+while getopts ahclbprt option; do
+  echo "OPTION=${option}"
+
+  case "${option}" in
+    c) echo "Cleaning..."; echo; rm -rf nuget; rm -rf */bin; rm -rf */obj; rm -rf .nuget; rm -rf buildtest; rm -rf publish; rm -rf */bin; rm -rf */obj;ls -al;;
+    b) dotnet build $PROJECT/$PROJECT -c Release --no-incremental --no-restore --source ../$NUGET_PATH -o ../buildtest;;
+    l) ls -al; du -sh ./*;;
+    r) dotnet restore --source $NUGET_SOURCE --packages ../$NUGET_PATH;;
+    t) dotnet test -c Release --no-incremental --no-restore --source ../$NUGET_PATH --source $NUGET_SOURCE -o ../buildtest;;
+    h) help;;
+    a) all;;
+    \?)
+      echo "Unexpected option: $option"
+      help
+  esac
+done
+

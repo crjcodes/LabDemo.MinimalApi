@@ -53,15 +53,18 @@ env:
     NUGET_SOURCE: https://api.nuget.org/v3/index.json
     NUGET_PATH: .nuget
     NUGET_CACHE_KEY: ${{ github.sha }}
-    N1: $GITHUB_SHA
-    N2: $GITHUB_SHA
-    N3: ${GITHUB_SHA}
-    N4: "$env.GITHUB_SHA"
-    N5: ${{ github.sha }}
 
 jobs:
-  fix_sha:
-    name: temp
+
+  #============================================================
+  #  API DEPENDENCIES STAGE
+  #
+  #  Loads external dependencies for the API into the cache
+  #
+
+  restore:
+    name: Load app package dependencies
+
     defaults:
       run:
         shell: bash
@@ -71,337 +74,311 @@ jobs:
       matrix:
         dotnet-version: ['7.x.x' ]
 
-    steps:
-      - name: check
-        run: |
-          echo $GITHUB_SHA
-          echo $NUGET_CACHE_KEY
-          echo $N1
-          echo $N2
-          echo $N3
-          echo $N4
-          echo $N5
-          echo $N6
+    steps:       
+    - name: Checkout
+      uses: actions/checkout@v3
 
-#  #============================================================
-#  #  API DEPENDENCIES STAGE
-#  #
-#  #  Loads external dependencies for the API into the cache
-#  #
+    - name: Set up .NET Core
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: ${{ matrix.dotnet-version }}
 
-#  restore:
-#    name: Load app package dependencies
+    - name: Before
+      run: |
+        echo "SOLUTION = $SOLUTION"
+        echo "PROJECT = $PROJECT"
+        echo "NUGET CACHE KEY = " $NUGET_CACHE_KEY
+        echo "Total solution storage consumption before job for ${PWD}:" 
+        du -sh ./*
 
-#    defaults:
-#      run:
-#        shell: bash
+    # This approaches overrides any settings in nuget.config if it exists
+    - name: Load
+      run: |
+        cd $PROJECT
+        dotnet restore --source $NUGET_SOURCE --packages ../$NUGET_PATH
 
-#    runs-on: ubuntu-latest
-#    strategy:
-#      matrix:
-#        dotnet-version: ['7.x.x' ]
-
-#    steps:       
-#    - name: Checkout
-#      uses: actions/checkout@v3
-
-#    - name: Set up .NET Core
-#      uses: actions/setup-dotnet@v3
-#      with:
-#        dotnet-version: ${{ matrix.dotnet-version }}
-
-#    - name: Before
-#      run: |
-#        echo "SOLUTION = $SOLUTION"
-#        echo "PROJECT = $PROJECT"
-#        echo "NUGET CACHE KEY = " $NUGET_CACHE_KEY
-#        echo "Total solution storage consumption before job for ${PWD}:" 
-#        du -sh ./*
-
-#    # This approaches overrides any settings in nuget.config if it exists
-#    - name: Load
-#      run: |
-#        cd $PROJECT
-#        dotnet restore --source $NUGET_SOURCE --packages ../$NUGET_PATH
-
-#    - name: Cache .NET packages
-#      id: cache-nuget
-#      uses: actions/cache@v3
-#      with:
-#        path: ./$NUGET_PATH
-#        key: $NUGET_CACHE_KEY
+    - name: Cache .NET packages
+      id: cache-nuget
+      uses: actions/cache@v3
+      with:
+        path: ./$NUGET_PATH
+        key: $NUGET_CACHE_KEY
        
-#    - name: Check caching
-#      if: steps.cache-nuget.outpus.cache-hit != 'true'
-#      run: echo "Cache failure"
+    - name: Check caching
+      if: steps.cache-nuget.outpus.cache-hit != 'true'
+      run: echo "Cache failure"
 
 
-#  #============================================================
-#  #  BUILD STAGE
-#  #
-#  # Ensures that the code builds without errors with each push to the remote repo
-#  #
+  #============================================================
+  #  BUILD STAGE
+  #
+  # Ensures that the code builds without errors with each push to the remote repo
+  #
 
-#  build:
-#    name: Build API
+  build:
+    name: Build API
 
-#    # Use the Bash shell regardless whether the GitHub Actions runner is ubuntu-latest, macos-latest, or windows-latest
-#    defaults:
-#      run:
-#        shell: bash
+    # Use the Bash shell regardless whether the GitHub Actions runner is ubuntu-latest, macos-latest, or windows-latest
+    defaults:
+      run:
+        shell: bash
 
-#    runs-on: ubuntu-latest
-#    strategy:
-#      matrix:
-#        dotnet-version: ['7.x.x' ]
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        dotnet-version: ['7.x.x' ]
 
-#    needs: [restore]    
+    needs: [restore]    
 
-#    steps:       
-#    - name: Checkout
-#      uses: actions/checkout@v3
+    steps:       
+    - name: Checkout
+      uses: actions/checkout@v3
 
-#    - name: Set up .NET Core
-#      uses: actions/setup-dotnet@v3
-#      with:
-#        dotnet-version: ${{ matrix.dotnet-version }}
+    - name: Set up .NET Core
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: ${{ matrix.dotnet-version }}
 
-#    - name: Before
-#      run: |
-#        echo "SOLUTION = $SOLUTION"
-#        echo "PROJECT = $PROJECT"
-#        echo "Total solution storage consumption before job for ${PWD}:" 
-#        du -sh ./*
+    - name: Before
+      run: |
+        echo "SOLUTION = $SOLUTION"
+        echo "PROJECT = $PROJECT"
+        echo "Total solution storage consumption before job for ${PWD}:" 
+        du -sh ./*
 
-#    - name: Restore Nuget cache
-#      id: cache-restore
-#      uses: actions/cache@v3
-#      with:
-#        path: $NUGET_PATH
-#        key: $NUGET_CACHE_KEY
+    - name: Restore Nuget cache
+      id: cache-restore
+      uses: actions/cache@v3
+      with:
+        path: $NUGET_PATH
+        key: $NUGET_CACHE_KEY
 
-#    - name: Build the project with cached nuget
-#      if: steps.cache-restore.outputs.cache-hit == 'true'              
-#      run: |        
-#        cd $PROJECT
-#        dotnet build -c Release --no-incremental --no-restore --source ../$NUGET_PATH -o ../build
+    - name: Build the project with cached nuget
+      if: steps.cache-restore.outputs.cache-hit == 'true'              
+      run: |        
+        cd $PROJECT
+        dotnet build -c Release --no-incremental --no-restore --source ../$NUGET_PATH -o ../build
 
-#    - name: Build the project without cache
-#      if: steps.cache-restore.outputs.cache-hit == 'false'              
-#      run: |        
-#        cd $PROJECT
-#        dotnet build -c Release --no-incremental --source ../$NUGET_SOURCE -o ../build
+    - name: Build the project without cache
+      if: steps.cache-restore.outputs.cache-hit == 'false'              
+      run: |        
+        cd $PROJECT
+        dotnet build -c Release --no-incremental --source ../$NUGET_SOURCE -o ../build
 
-#    - name: Pass the build on to the publish step 
-#      uses: actions/upload-artifact@v3
-#      with:
-#        name: api-build-output
-#        path: ./build
-#        retention-days: 1
+    - name: Pass the build on to the publish step 
+      uses: actions/upload-artifact@v3
+      with:
+        name: api-build-output
+        path: ./build
+        retention-days: 1
 
-#    - name: After
-#      run: |
-#        echo "Total solution storage consumption before job for ${PWD}:" 
-#        du -sh ./*
+    - name: After
+      run: |
+        echo "Total solution storage consumption before job for ${PWD}:" 
+        du -sh ./*
         
-#  #============================================================
-#  #  TEST STAGE
+  #============================================================
+  #  TEST STAGE
+  #
+  #  FUTURE: identify a way for the dotnet test command to use cached dependencies and the app build artifacts
+  #
 
-#  test:
-#    name: API Black-Box Testing
 
-#    # Use the Bash shell regardless whether the GitHub Actions runner is ubuntu-latest, macos-latest, or windows-latest
-#    defaults:
-#      run:
-#        shell: bash
+  test:
+    name: API Black-Box Testing
 
-#    runs-on: ubuntu-latest
+    # Use the Bash shell regardless whether the GitHub Actions runner is ubuntu-latest, macos-latest, or windows-latest
+    defaults:
+      run:
+        shell: bash
 
-#    strategy:
-#      matrix:
-#        dotnet-version: ['7.x.x' ]
+    runs-on: ubuntu-latest
 
-#    needs: [build]    
+    strategy:
+      matrix:
+        dotnet-version: ['7.x.x' ]
+
+    needs: [build]    
     
-#    env:
-#      TEST_PROJECT: LabDemo.MinimalApi.Tests
+    env:
+      TEST_PROJECT: LabDemo.MinimalApi.Tests
 
-#    steps:
+    steps:
 
-#    - name: Checkout
-#      uses: actions/checkout@v3
+    - name: Checkout
+      uses: actions/checkout@v3
       
-#    - name: Set up .NET Core
-#      uses: actions/setup-dotnet@v3
-#      with:
-#        dotnet-version: ${{ matrix.dotnet-version }}
+    - name: Set up .NET Core
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: ${{ matrix.dotnet-version }}
 
-#    - name: Before
-#      run: |
-#        echo "SOLUTION = $SOLUTION"
-#        echo "TEST_PROJECT = $TEST_PROJECT"
-#        echo "Running in ${PWD}"
-#        echo "Total solution storage consumption before job for ${PWD}:" 
-#        du -sh ./*
+    - name: Before
+      run: |
+        echo "SOLUTION = $SOLUTION"
+        echo "TEST_PROJECT = $TEST_PROJECT"
+        echo "Running in ${PWD}"
+        echo "Total solution storage consumption before job for ${PWD}:" 
+        du -sh ./*
 
-#    - name: Restore Nuget cache
-#      id: cache-restore
-#      uses: actions/cache@v3
-#      with:
-#        path: $NUGET_PATH
-#        key: $NUGET_CACHE_KEY
+    - name: Restore Nuget cache
+      id: cache-restore
+      uses: actions/cache@v3
+      with:
+        path: $NUGET_PATH
+        key: $NUGET_CACHE_KEY
         
-#    # The -o parameter tells dotnet test where to find the TEST binaries for the app to run, 
-#    # not where the app binaries are from the build step, and not where the test output is going 
-#    # (test output goes to the specificed --results-directory <blah> or to the default TestResults)
+    # The -o parameter tells dotnet test where to find the TEST binaries for the app to run, 
+    # not where the app binaries are from the build step, and not where the test output is going 
+    # (test output goes to the specificed --results-directory <blah> or to the default TestResults)
 
-#    - name: Test the project with cached nuget
-#      if: steps.cache-restore.outputs.cache-hit == 'true'              
-#      run: |        
-#        cd $PROJECT
-#        dotnet test -c Release --no-incremental --no-restore --source ../$NUGET_PATH --source $NUGET_SOURCE -o ../test
+    - name: Test the project with cached nuget
+      if: steps.cache-restore.outputs.cache-hit == 'true'              
+      run: |        
+        cd $PROJECT
+        dotnet test -c Release --no-incremental --no-restore --source ../$NUGET_PATH --source $NUGET_SOURCE -o ../test
 
-#    - name: Test the project without cache
-#      if: steps.cache-restore.outputs.cache-hit == 'false'              
-#      run: |        
-#        cd $PROJECT
-#        dotnet test -c Release --no-incremental --source $NUGET_SOURCE -o ../test
+    - name: Test the project without cache
+      if: steps.cache-restore.outputs.cache-hit == 'false'              
+      run: |        
+        cd $PROJECT
+        dotnet test -c Release --no-incremental --source $NUGET_SOURCE -o ../test
 
-#    - name: Run the black box tests
-#      run: |
-#        cd $TEST_PROJECT
-#        dotnet test -c Release --source ../$NUGET_PATH --source $NUGET_SOURCE
+    - name: Run the black box tests
+      run: |
+        cd $TEST_PROJECT
+        dotnet test -c Release --source ../$NUGET_PATH --source $NUGET_SOURCE
 
-#    - name: After
-#      run: |
-#        echo "Total solution storage consumption after job for ${PWD}:" 
-#        du -sh ./*
+    - name: After
+      run: |
+        echo "Total solution storage consumption after job for ${PWD}:" 
+        du -sh ./*
 
 
-#  #============================================================
-#  #  PUBLISH STAGE
+  #============================================================
+  #  PUBLISH STAGE
 
-#  publish:
-#    name: Publish the API
+  publish:
+    name: Publish the API
 
-#    # Use the Bash shell regardless whether the GitHub Actions runner is ubuntu-latest, macos-latest, or windows-latest
-#    defaults:
-#      run:
-#        shell: bash
+    # Use the Bash shell regardless whether the GitHub Actions runner is ubuntu-latest, macos-latest, or windows-latest
+    defaults:
+      run:
+        shell: bash
 
-#    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest
 
-#    strategy:
-#      matrix:
-#        dotnet-version: ['7.x.x' ]
+    strategy:
+      matrix:
+        dotnet-version: ['7.x.x' ]
 
-#    needs: [build, test]    
+    needs: [build, test]    
         
-#    steps:
+    steps:
 
-#    - name: Checkout
-#      uses: actions/checkout@v3
+    - name: Checkout
+      uses: actions/checkout@v3
 
-#    - name: Set up .NET Core
-#      uses: actions/setup-dotnet@v3
-#      with:
-#        dotnet-version: ${{ matrix.dotnet-version }}
+    - name: Set up .NET Core
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: ${{ matrix.dotnet-version }}
 
-#    - name: Before
-#      run: |
-#        echo "Total solution storage consumption before job for ${PWD}:" 
-#        du -sh ./*
+    - name: Before
+      run: |
+        echo "Total solution storage consumption before job for ${PWD}:" 
+        du -sh ./*
 
-#    - name: Restore Nuget cache
-#      id: cache-restore
-#      uses: actions/cache@v3
-#      with:
-#        path: $NUGET_PATH
-#        key: $NUGET_CACHE_KEY
+    - name: Restore Nuget cache
+      id: cache-restore
+      uses: actions/cache@v3
+      with:
+        path: $NUGET_PATH
+        key: $NUGET_CACHE_KEY
 
-#    - name: Download api build artifacts for speed optimization
-#      uses: actions/download-artifact@v3
-#      with: 
-#        name: api-build-output
-#        path: build
+    - name: Download api build artifacts for speed optimization
+      uses: actions/download-artifact@v3
+      with: 
+        name: api-build-output
+        path: build
 
-#    - name: Check artifact download
-#      run: |
-#        echo "default working directory, ${PWD}:"
-#        ls
-#        echo "and in the build dir:"
-#        ls build
+    - name: Check artifact download
+      run: |
+        echo "default working directory, ${PWD}:"
+        ls
+        echo "and in the build dir:"
+        ls build
 
-#    - name: After cache and artifacts
-#      run: |
-#        echo "Total solution storage consumption after cache and artifacts for ${PWD}:" 
-#        du -sh ./*
+    - name: After cache and artifacts
+      run: |
+        echo "Total solution storage consumption after cache and artifacts for ${PWD}:" 
+        du -sh ./*
 
-#    - name: Publish the project with cache and artifacts
-#      if: steps.cache-restore.outputs.cache-hit == 'true'              
-#      run: |        
-#        cd $PROJECT
-#        dotnet publish -c Release --no-incremental --no-restore --source ../$NUGET_PATH --source ../build -o ../publish
+    - name: Publish the project with cache and artifacts
+      if: steps.cache-restore.outputs.cache-hit == 'true'              
+      run: |        
+        cd $PROJECT
+        dotnet publish -c Release --no-incremental --no-restore --source ../$NUGET_PATH --source ../build -o ../publish
 
-#    - name: Publish the project without cache but with artifacts (hopefully)
-#      if: steps.cache-restore.outputs.cache-hit == 'false'              
-#      run: |        
-#        cd $PROJECT
-#        dotnet publish -c Release --no-incremental --source ../build --source ../$NUGET_SOURCE -o ../publish
+    - name: Publish the project without cache but with artifacts (hopefully)
+      if: steps.cache-restore.outputs.cache-hit == 'false'              
+      run: |        
+        cd $PROJECT
+        dotnet publish -c Release --no-incremental --source ../build --source ../$NUGET_SOURCE -o ../publish
 
-#    # Optimized by using the output from the previous build job, which includes
-#    # not only the nuget dependencies, but the binaries for the api
+    # Optimized by using the output from the previous build job, which includes
+    # not only the nuget dependencies, but the binaries for the api
 
-#    - name: Publish the API
-#      run: |
-#        echo "default working directory, ${PWD}"
-#        echo "PROJECT = ${PROJECT}"
-#        cd $PROJECT
-#        echo "project now working directory, ${PWD}"
-#        ls ../build
-#        dotnet publish -c Release -o ../publish 
+    - name: Publish the API
+      run: |
+        echo "default working directory, ${PWD}"
+        echo "PROJECT = ${PROJECT}"
+        cd $PROJECT
+        echo "project now working directory, ${PWD}"
+        ls ../build
+        dotnet publish -c Release -o ../publish 
 
-#    - name: After
-#      run: |
-#        echo "Total solution storage consumption before job for ${PWD}:" 
-#        du -sh ./*
+    - name: After
+      run: |
+        echo "Total solution storage consumption before job for ${PWD}:" 
+        du -sh ./*
 
-#    - name: Upload artifact for deployment job
-#      uses: actions/upload-artifact@v2
-#      with:
-#        name: ${PROJECT}
-#        path: ../publish
+    - name: Upload artifact for deployment job
+      uses: actions/upload-artifact@v2
+      with:
+        name: ${PROJECT}
+        path: ../publish
 
-#  #============================================================
-#  #  DEPLOY STAGE
+  #============================================================
+  #  DEPLOY STAGE
 
-#  deploy-azure:
-#    name: Deploy to Azure
+  deploy-azure:
+    name: Deploy to Azure
 
-#    defaults:
-#      run:
-#        shell: bash
-##        working-directory: .
+    defaults:
+      run:
+        shell: bash
+#        working-directory: .
 
-#    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest
 
-#    needs: [publish]    
+    needs: [publish]    
 
-#    environment:
-#      name: 'production'
-#      url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
+    environment:
+      name: 'production'
+      url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
 
-#    steps:
-#      - name: Download artifact from build job
-#        uses: actions/download-artifact@v2
-#        with:
-#          name: ${PROJECT}
+    steps:
+      - name: Download artifact from build job
+        uses: actions/download-artifact@v2
+        with:
+          name: ${PROJECT}
 
-#      - name: Deploy to Azure Web App
-#        id: deploy-to-webapp
-#        uses: azure/webapps-deploy@v2
-#        with:
-#          app-name: 'LabDemo-MinimalApi-Code'
-#          slot-name: 'production'
-#          publish-profile: ${{ secrets.AzureAppService_PublishProfile_a3c3d11e8d764bfdbf88856aa7a173c4 }}
-#          package: .
+      - name: Deploy to Azure Web App
+        id: deploy-to-webapp
+        uses: azure/webapps-deploy@v2
+        with:
+          app-name: 'LabDemo-MinimalApi-Code'
+          slot-name: 'production'
+          publish-profile: ${{ secrets.AzureAppService_PublishProfile_a3c3d11e8d764bfdbf88856aa7a173c4 }}
+          package: .
