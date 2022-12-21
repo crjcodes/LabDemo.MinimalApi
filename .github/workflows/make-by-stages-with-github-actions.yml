@@ -53,11 +53,12 @@ env:
     NUGET_SOURCE: https://api.nuget.org/v3/index.json
     NUGET_PATH: .nuget
     NUGET_CACHE_KEY: "${GITHUB_SHA}"
-          #echo $GITHUB_SHA
-          #echo ${GITHUB_SHA}
-          #echo "$env.GITHUB_SHA"
-          #echo ${{ github.sha }}
-          #echo ${{ env.GITHUB_SHA }}
+    N1: $GITHUB_SHA
+    N2: $GITHUB_SHA
+    N3: ${GITHUB_SHA}
+    N4: "$env.GITHUB_SHA"
+    N5: ${{ github.sha }}
+    N6: ${{ env.GITHUB_SHA }}
 
 jobs:
   fix_sha:
@@ -74,9 +75,13 @@ jobs:
     steps:
       - name: check
         run: |
-          echo $NUGET_CACHE_KEY
-          echo ${NUGET_CACHE_KEY}
-          echo "${NUGET_CACHE_KEY}"
+          echo $GITHUB_SHA
+          echo $N1
+          echo $N2
+          echo $N3
+          echo $N4
+          echo $N5
+          echo $N6
 
 #  #============================================================
 #  #  API DEPENDENCIES STAGE
