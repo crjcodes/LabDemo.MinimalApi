@@ -29,6 +29,11 @@
 #
 #   But, this ci attempts to do so, because the authoring engineer is stubborn, er, persistent
 #
+# TRACEABILITY
+#
+#   A crude approach where steps dump output is the traceability of the moment.
+#   OpenTelemetry looks interesting, but is beyond scope for noe
+#
 
 name: LabDemo.MinimalApi.BuildByStages
 run-name: ${{ github.actor }} is experimenting with GitHub actions 🚀
@@ -90,7 +95,7 @@ jobs:
     - name: Load
       run: |
         cd $PROJECT
-        dotnet restore --source $NUGET_SOURCE --packages ../$NUGET_PATH --verbosity
+        dotnet restore --source $NUGET_SOURCE --packages ../$NUGET_PATH
 
     - name: Cache .NET packages
       uses: actions/cache@v3
