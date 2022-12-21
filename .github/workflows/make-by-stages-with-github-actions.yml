@@ -36,7 +36,7 @@ jobs:
   #============================================================
   #  BUILD STAGE
   #
-  #  IN-PROGRESS: Implementing caching 
+  # Ensures that the code builds without errors with each push to the remote repo
   #
 
   build:
@@ -68,21 +68,18 @@ jobs:
         echo "Total solution storage consumption before job for ${PWD}:" 
         du -sh ./*
 
-    # The custom location of nuget packages is in place for later optimizations if
-    # dependencies grow, when runner storage or job speeds become a concern
-
-    # The custom build location is cached for use by the test job
+    # rely on dotnet build to restore any nuget dependencies for the app itself
+    # 1. It's a small app, so not a large number of nuget packages to concern one's self with, or to cache for later
+    # 2. The only purpose of a separate restore step would be to direct to a custom directory
+    #    to store in the cache for later use with other projects in the solution later
+    # 3. Custom directories for dotnet steps are PROBLEMATIC for a number of reasons -- avoid when you can
 
     - name: Build the project
       run: |        
         cd $PROJECT
-        dotnet restore --packages ../nuget
-        dotnet build -c Release --no-incremental --no-restore --source ../nuget -o ../build
+        dotnet build -c Release --no-incremental -o ../build
 
-   # The nuget packages can be cached for another workflow run, for optimization
-   # In this case, the app has minimal dependencies, so not important to cache
-
-    - name: Pass the build on to other jobs
+    - name: Pass the build on to the publish step 
       uses: actions/upload-artifact@v3
       with:
         name: api-build-output
@@ -134,23 +131,18 @@ jobs:
         echo "Total solution storage consumption before job for ${PWD}:" 
         du -sh ./*
         
-    - name: Download api build artifacts for speed optimization
-      uses: actions/download-artifact@v3
-      with: 
-        name: api-build-output
-        path: ./build
-
-    - name: Check artifact download
-      run: pwd; ls; ls build
+    # The -o parameter tells dotnet test where to find the TEST binaries for the app to run, 
+    # not where the app binaries are from the build step, and not where the test output is going 
+    # (test output goes to the specificed --results-directory <blah> or to the default TestResults)
 
     - name: Run the black box tests
       run: |
         cd $TEST_PROJECT
-        dotnet test -c Release -o ../build
+        dotnet test -c Release
 
     - name: After
       run: |
-        echo "Total solution storage consumption before job for ${PWD}:" 
+        echo "Total solution storage consumption after job for ${PWD}:" 
         du -sh ./*
 
   #============================================================
