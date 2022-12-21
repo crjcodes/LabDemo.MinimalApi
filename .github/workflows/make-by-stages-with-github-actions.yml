@@ -50,10 +50,10 @@ on: [push]
 env:    
     SOLUTION: LabDemo.MinimalApi
     PROJECT: LabDemo.MinimalApi
+    TEST_PROJECT: LabDemo.MinimalApi.Tests
     NUGET_SOURCE: https://api.nuget.org/v3/index.json
     NUGET_PATH: .nuget
-    NUGET_CACHE_KEY: ${{ github.sha }}
-
+    NUGET_CACHE_KEY: ${{ runner.os }}-nuget-{{ hashFiles($PROJECT/$PROJECT.csproj) }}-{{ hashFiles($TEST_PROJECT/$TEST_PROJECT.csproj) }}
 jobs:
 
   #============================================================
@@ -108,7 +108,6 @@ jobs:
     - name: Check caching
       if: steps.cache-nuget.outpus.cache-hit != 'true'
       run: echo "Cache failure"
-
 
   #============================================================
   #  BUILD STAGE
@@ -196,9 +195,6 @@ jobs:
 
     needs: [build]    
     
-    env:
-      TEST_PROJECT: LabDemo.MinimalApi.Tests
-
     steps:
 
     - name: Checkout
@@ -246,7 +242,6 @@ jobs:
       run: |
         echo "Total solution storage consumption after job for ${PWD}:" 
         du -sh ./*
-
 
   #============================================================
   #  PUBLISH STAGE
@@ -331,7 +326,6 @@ jobs:
     defaults:
       run:
         shell: bash
-#        working-directory: .
 
     runs-on: ubuntu-latest
 
