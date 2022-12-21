@@ -242,11 +242,6 @@ jobs:
       run: |        
         dotnet test $TEST_PROJECT/${TEST_PROJECT}.csproj -c Release -o buildtest
 
-    - name: Run the black box tests
-      run: |
-        cd $TEST_PROJECT
-        dotnet test -c Release --source ../$NUGET_PATH --source $NUGET_SOURCE
-
     - name: After
       run: |
         echo "Total solution storage consumption after job for ${PWD}:" 
