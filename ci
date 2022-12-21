@@ -1,13 +1,23 @@
-#!/usr/bin/sh
+#!/usr/bin/bash
+#
+# A convenience script for running dotnet from the CLI
+# Can be used to emulate what happens in ci pipelines 
+#
+# For this api, it is indeed mirroring what the GitHub Actions are doing
 #
 
 SOLUTION=LabDemo.MinimalApi
 PROJECT=LabDemo.MinimalApi
+TEST_PROJECT=LabDemo.MinimalApi.Tests
+
 NUGET_SOURCE=https://api.nuget.org/v3/index.json
 NUGET_PATH=.nuget
 
+LOG_DIVIDER=">>>>>>>>>>>>>>>>>>>>>>>>>>> "
+
+echo "============================================================="
 echo "CI support script"
-echo "Argument: $1"
+echo
 
 help()
 {
@@ -17,7 +27,6 @@ help()
                 -b  perform the dotnet build step
                 -c  clean
                 -h  help
-                -l  list the size of the root directory and subfolders
                 -p  publish the app to the folder
                 -t  run the tests for the app
                   "
@@ -26,36 +35,134 @@ help()
 
 all()
 {
-  echo ">all"
-  clean
-  build
+  echo "$LOG_DIVIDER ALL" 
+  clean; echo
+  
+  CLEAN_SIZE=`du -s`
+  CLEAN_TIME=$(date +%s)
+
+  restore; echo
+
+  build; echo
+
+  echo
   test
+
+  echo
+  publish
+
+  FINISH_SIZE=`du -s`
+
+  echo "$LOG_DIVIDER METRICS"
+  echo "Original Size: ${CLEAN_SIZE} bytes"
+  echo "Ending Size: ${FINISH_SIZE} bytes"
+  echo
+  
+  A=${FINISH_SIZE//[^0-9]}
+  B=${CLEAN_SIZE//[^0-9]}
+
+  SIZE_DIFF=$((A-B))/1024  
+  echo "Size increase: ${SIZE_DIFF}M" 
+  echo
+
+  FINISH_TIME=$(date +%s)  
+  TIME_DIFF=$((FINISH_TIME-CLEAN_TIME))
+  TIME_DIFF_FORMATTED=`printf '%02dm:%02ds\n' $((TIME_DIFF%3600/60)) $((TIME_DIFF%60))`
+  echo "Time elapsed: ${TIME_DIFF_FORMATTED}"
 }
 
 build()
 {
-  echo ">build"
+  echo "$LOG_DIVIDER BUILD"
+  dotnet build $PROJECT/${PROJECT}.csproj -c Release --no-incremental --no-restore --source ./$NUGET_PATH -o ./buildtest
+  
+  status=$?
+
+  if [[ $status -ne 0 ]]
+  then
+    echo "$LOG_DIVIDER BUILD FAILED"
+    exit $status
+  fi
 }
 
-list()
+clean()
 {
-  echo ">clean"
+  echo "$LOG_DIVIDER CLEAN"
+  echo 
+  rm -rf nuget
+  rm -rf */bin; rm -rf */obj;
+  rm -rf .nuget
+  rm -rf buildtest; rm -rf publish
+  rm -rf */bin; rm -rf */obj
+  du -sh ./*/
+}
+
+# Since the above build output was directed to a custom location, we need to tell dotnet publish
+# the location of the build output (if we're going to avoid an unnecessary rebuild)
+# How to do this is rather undocumented, as Microsoft doesn't have much impetus behind discrete
+# ci steps like build/test/publish.
+# This way works, with `-p:OutDir` per 
+# https://stackoverflow.com/questions/61546001/use-dotnet-build-outputs-as-dotnet-publish-inputs
+
+publish()
+{
+  echo "$LOG_DIVIDER PUBLISH"
+  dotnet publish $PROJECT/${PROJECT}.csproj -c Release --no-build -p:OutDir=../buildtest -o ./publish
+
+  status=$?
+
+  if [[ $status -ne 0 ]]
+  then
+    echo "$LOG_DIVIDER PUBLISH FAILED"
+    exit $status
+  fi
+  
+  du -sh ./*/  
+}
+
+# all external dependencies for the solution
+# if you need to restore for a specific subsystem (a specific .csproj), you'll need to 
+# generate dependencies per project.  I would still recommend a common packages folder
+# to reduce duplication of effort from subsystem project to subsystem project
+
+restore()
+{
+  echo "$LOG_DIVIDER RESTORE"
+  dotnet restore --source $NUGET_SOURCE --packages $NUGET_PATH
+  
+  status=$?
+
+  if [[ $status -ne 0 ]]
+  then
+    echo "$LOG_DIVIDER RESTORE FAILED"
+    exit $status
+  fi  
+
+  du -sh ./$NUGET_PATH
 }
 
 test()
 {
-  echo ">test"
+  echo "$LOG_DIVIDER TEST"
+  dotnet test $TEST_PROJECT/${TEST_PROJECT}.csproj -c Release --no-restore -o buildtest
+  
+  status=$?
+
+  if [[ $status -ne 0 ]]
+  then
+    echo "$LOG_DIVIDER TEST FAILED"
+    exit $status
+  fi
+
 }
 
 while getopts ahclbprt option; do
-  echo "OPTION=${option}"
-
   case "${option}" in
-    c) echo "Cleaning..."; echo; rm -rf nuget; rm -rf */bin; rm -rf */obj; rm -rf .nuget; rm -rf buildtest; rm -rf publish; rm -rf */bin; rm -rf */obj;ls -al;;
-    b) dotnet build $PROJECT/$PROJECT -c Release --no-incremental --no-restore --source ../$NUGET_PATH -o ../buildtest;;
-    l) ls -al; du -sh ./*;;
-    r) dotnet restore --source $NUGET_SOURCE --packages ../$NUGET_PATH;;
-    t) dotnet test -c Release --no-incremental --no-restore --source ../$NUGET_PATH --source $NUGET_SOURCE -o ../buildtest;;
+    c) clean;;
+    b) build;;
+    p) publish;;
+    r) restore;;
+    t) test;; 
     h) help;;
     a) all;;
     \?)
@@ -63,4 +170,3 @@ while getopts ahclbprt option; do
       help
   esac
 done
-

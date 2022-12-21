@@ -95,7 +95,7 @@ jobs:
     - name: Load
       run: |
         cd $PROJECT
-        dotnet restore --source $NUGET_SOURCE --packages ../$NUGET_PATH
+        dotnet restore -c Release --source $NUGET_SOURCE --packages ../$NUGET_PATH
 
     - name: Cache .NET packages
       id: cache-nuget
