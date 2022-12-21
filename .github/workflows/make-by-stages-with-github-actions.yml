@@ -51,8 +51,8 @@ env:
     SOLUTION: LabDemo.MinimalApi
     PROJECT: LabDemo.MinimalApi
     NUGET_SOURCE: https://api.nuget.org/v3/index.json
-    NUGET_PATH: nuget
-    NUGET_CACHE_KEY: ${GITHUB_SHA}
+    NUGET_PATH: .nuget
+    NUGET_CACHE_KEY: $GITHUB_SHA
 
 jobs:
 
@@ -87,7 +87,7 @@ jobs:
       run: |
         echo "SOLUTION = $SOLUTION"
         echo "PROJECT = $PROJECT"
-        echo "NUGET CACHE KEY = $NUGET_CACHE_KEY"
+        echo "NUGET CACHE KEY = " $NUGET_CACHE_KEY
         echo "Total solution storage consumption before job for ${PWD}:" 
         du -sh ./*
 
@@ -98,10 +98,15 @@ jobs:
         dotnet restore --source $NUGET_SOURCE --packages ../$NUGET_PATH
 
     - name: Cache .NET packages
+      id: cache-nuget
       uses: actions/cache@v3
       with:
-        path: $NUGET_PATH
+        path: ./$NUGET_PATH
         key: $NUGET_CACHE_KEY
+       
+    - name: Check caching
+      if: steps.cache-nuget.outpus.cache-hit != 'true'
+      run: echo "Cache failure"
 
 
   #============================================================
