@@ -52,7 +52,12 @@ env:
     PROJECT: LabDemo.MinimalApi
     NUGET_SOURCE: https://api.nuget.org/v3/index.json
     NUGET_PATH: .nuget
-    NUGET_CACHE_KEY: $env.GITHUB_SHA
+    NUGET_CACHE_KEY: $GITHUB_SHA
+          #echo $GITHUB_SHA
+          #echo ${GITHUB_SHA}
+          #echo "$env.GITHUB_SHA"
+          #echo ${{ github.sha }}
+          #echo ${{ env.GITHUB_SHA }}
 
 jobs:
   fix_sha:
@@ -69,11 +74,9 @@ jobs:
     steps:
       - name: check
         run: |
-          echo $GITHUB_SHA
-          echo ${GITHUB_SHA}
-          echo "$env.GITHUB_SHA"
-          echo ${{ github.sha }}
-          echo ${{ env.GITHUB_SHA }}
+          echo $NUGET_CACHE_KEY
+          echo ${NUGET_CACHE_KEY}
+          echo "${NUGET_CACHE_KEY}"
 
 #  #============================================================
 #  #  API DEPENDENCIES STAGE
