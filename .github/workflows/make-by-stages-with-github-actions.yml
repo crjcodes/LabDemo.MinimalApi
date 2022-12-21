@@ -17,32 +17,49 @@
 #       then perhaps the project, `/home/runner/work/{GitHubProjectName}/{YourRepoName}/{YourProjectName}`
 #           containing `csproj`
 #
-# DEPENDENCIES
+# DOTNET AND CI OPTIMIZATION INCOMPATIBILITY
 #
-#   When trying to leverage dependencies collected in a previous dotnet step, the only way to confirm that the 
-#   current dotnet step is pointed at those existing dependencies is VISUAL INSPECTION.  So far, I have not 
-#   identified any other way
+#   In theory, one could restore nuget dependencies once at the beginning, then use throughout ci steps
+#   In theory, one could store results of the dotnet build in a custom directory and use in successive commands
+#
+#   In reality, the dotnet commands are not built to be used in this manner, and it's very difficult to set up
+#   cache with nuget dependencies, temporary artifacts from the build, successive ci steps using said cache and
+#   artifacts, and CONFIRMING that the setup is working as expected and that successive dotnet commands are not
+#   just rebuilding the whole darn thing agin.
+#
+#   But, this ci attempts to do so, because the authoring engineer is stubborn, er, persistent
+#
 
 name: LabDemo.MinimalApi.BuildByStages
 run-name: ${{ github.actor }} is experimenting with GitHub actions 🚀
 on: [push]
 
-env:
+# The NUGET_KEY is flexible; for instance, examples exist to make it update when package-lock.json changes, but
+# note by default .NET projects do not typically use the package lock file, so that condition would always be met
+# for this project
+#
+# Another option would be to detect changes to the .csproj file, then update the cache based on that, but for
+# this case, the commit SHA should be enough, although not all that sophisticated.  Sometimes good enough is good
+# enough
+
+env:    
     SOLUTION: LabDemo.MinimalApi
     PROJECT: LabDemo.MinimalApi
+    NUGET_SOURCE: https://api.nuget.org/v3/index.json
+    NUGET_PATH: nuget
+    NUGET_CACHE_KEY: ${GITHUB_SHA}
 
 jobs:
 
   #============================================================
-  #  BUILD STAGE
+  #  API DEPENDENCIES STAGE
   #
-  # Ensures that the code builds without errors with each push to the remote repo
+  #  Loads external dependencies for the API into the cache
   #
 
-  build:
-    name: Build API
+  restore:
+    name: Load app package dependencies
 
-    # Use the Bash shell regardless whether the GitHub Actions runner is ubuntu-latest, macos-latest, or windows-latest
     defaults:
       run:
         shell: bash
@@ -65,19 +82,78 @@ jobs:
       run: |
         echo "SOLUTION = $SOLUTION"
         echo "PROJECT = $PROJECT"
+        echo "NUGET CACHE KEY = $NUGET_CACHE_KEY"
         echo "Total solution storage consumption before job for ${PWD}:" 
         du -sh ./*
 
-    # rely on dotnet build to restore any nuget dependencies for the app itself
-    # 1. It's a small app, so not a large number of nuget packages to concern one's self with, or to cache for later
-    # 2. The only purpose of a separate restore step would be to direct to a custom directory
-    #    to store in the cache for later use with other projects in the solution later
-    # 3. Custom directories for dotnet steps are PROBLEMATIC for a number of reasons -- avoid when you can
+    # This approaches overrides any settings in nuget.config if it exists
+    - name: Load
+      run: |
+        cd $PROJECT
+        dotnet restore --source $NUGET_SOURCE --packages ../$NUGET_PATH --verbosity
 
-    - name: Build the project
+    - name: Cache .NET packages
+      uses: actions/cache@v3
+      with:
+        path: $NUGET_PATH
+        key: $NUGET_CACHE_KEY
+
+
+  #============================================================
+  #  BUILD STAGE
+  #
+  # Ensures that the code builds without errors with each push to the remote repo
+  #
+
+  build:
+    name: Build API
+
+    # Use the Bash shell regardless whether the GitHub Actions runner is ubuntu-latest, macos-latest, or windows-latest
+    defaults:
+      run:
+        shell: bash
+
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        dotnet-version: ['7.x.x' ]
+
+    needs: [restore]    
+
+    steps:       
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    - name: Set up .NET Core
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: ${{ matrix.dotnet-version }}
+
+    - name: Before
+      run: |
+        echo "SOLUTION = $SOLUTION"
+        echo "PROJECT = $PROJECT"
+        echo "Total solution storage consumption before job for ${PWD}:" 
+        du -sh ./*
+
+    - name: Restore Nuget cache
+      id: cache-restore
+      uses: actions/cache@v3
+      with:
+        path: $NUGET_PATH
+        key: $NUGET_CACHE_KEY
+
+    - name: Build the project with cached nuget
+      if: steps.cache-restore.outputs.cache-hit == 'true'              
       run: |        
         cd $PROJECT
-        dotnet build -c Release --no-incremental -o ../build
+        dotnet build -c Release --no-incremental --no-restore --source ../$NUGET_PATH -o ../build
+
+    - name: Build the project without cache
+      if: steps.cache-restore.outputs.cache-hit == 'false'              
+      run: |        
+        cd $PROJECT
+        dotnet build -c Release --no-incremental --source ../$NUGET_SOURCE -o ../build
 
     - name: Pass the build on to the publish step 
       uses: actions/upload-artifact@v3
@@ -130,15 +206,34 @@ jobs:
         echo "Running in ${PWD}"
         echo "Total solution storage consumption before job for ${PWD}:" 
         du -sh ./*
+
+    - name: Restore Nuget cache
+      id: cache-restore
+      uses: actions/cache@v3
+      with:
+        path: $NUGET_PATH
+        key: $NUGET_CACHE_KEY
         
     # The -o parameter tells dotnet test where to find the TEST binaries for the app to run, 
     # not where the app binaries are from the build step, and not where the test output is going 
     # (test output goes to the specificed --results-directory <blah> or to the default TestResults)
 
+    - name: Test the project with cached nuget
+      if: steps.cache-restore.outputs.cache-hit == 'true'              
+      run: |        
+        cd $PROJECT
+        dotnet test -c Release --no-incremental --no-restore --source ../$NUGET_PATH --source $NUGET_SOURCE -o ../test
+
+    - name: Test the project without cache
+      if: steps.cache-restore.outputs.cache-hit == 'false'              
+      run: |        
+        cd $PROJECT
+        dotnet test -c Release --no-incremental --source $NUGET_SOURCE -o ../test
+
     - name: Run the black box tests
       run: |
         cd $TEST_PROJECT
-        dotnet test -c Release
+        dotnet test -c Release -s ../$NUGET_PATH -s $NUGET_SOURCE
 
     - name: After
       run: |
@@ -174,6 +269,18 @@ jobs:
       with:
         dotnet-version: ${{ matrix.dotnet-version }}
 
+    - name: Before
+      run: |
+        echo "Total solution storage consumption before job for ${PWD}:" 
+        du -sh ./*
+
+    - name: Restore Nuget cache
+      id: cache-restore
+      uses: actions/cache@v3
+      with:
+        path: $NUGET_PATH
+        key: $NUGET_CACHE_KEY
+
     - name: Download api build artifacts for speed optimization
       uses: actions/download-artifact@v3
       with: 
@@ -187,6 +294,23 @@ jobs:
         echo "and in the build dir:"
         ls build
 
+    - name: After cache and artifacts
+      run: |
+        echo "Total solution storage consumption after cache and artifacts for ${PWD}:" 
+        du -sh ./*
+
+    - name: Publish the project with cache and artifacts
+      if: steps.cache-restore.outputs.cache-hit == 'true'              
+      run: |        
+        cd $PROJECT
+        dotnet publish -c Release --no-incremental --no-restore --source ../$NUGET_PATH --source ../build -o ../publish
+
+    - name: Publish the project without cache but with artifacts (hopefully)
+      if: steps.cache-restore.outputs.cache-hit == 'false'              
+      run: |        
+        cd $PROJECT
+        dotnet publish -c Release --no-incremental --source ../build --source ../$NUGET_SOURCE -o ../publish
+
     # Optimized by using the output from the previous build job, which includes
     # not only the nuget dependencies, but the binaries for the api
 
@@ -197,7 +321,7 @@ jobs:
         cd $PROJECT
         echo "project now working directory, ${PWD}"
         ls ../build
-        dotnet publish -c Release -o ../publish --source ../build
+        dotnet publish -c Release -o ../publish 
 
     - name: After
       run: |
