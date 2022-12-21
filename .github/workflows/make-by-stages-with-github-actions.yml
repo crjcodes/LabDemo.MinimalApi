@@ -235,14 +235,12 @@ jobs:
     - name: Test the project with cached nuget
       if: steps.cache-restore.outputs.cache-hit == 'true'              
       run: |        
-        cd $PROJECT
         dotnet test $TEST_PROJECT/${TEST_PROJECT}.csproj -c Release --no-restore -o buildtest
 
     - name: Test the project without cache
       if: steps.cache-restore.outputs.cache-hit == 'false'              
       run: |        
-        cd $PROJECT
-        dotnet test -c Release --no-incremental --source $NUGET_SOURCE -o ../test
+        dotnet test $TEST_PROJECT/${TEST_PROJECT}.csproj -c Release -o buildtest
 
     - name: Run the black box tests
       run: |
