@@ -52,7 +52,9 @@ env:
     PROJECT: LabDemo.MinimalApi
     NUGET_SOURCE: https://api.nuget.org/v3/index.json
     NUGET_PATH: .nuget
-    NUGET_CACHE_KEY: $GITHUB_SHA
+    NUGET_CACHE_KEY: ${{ env.GITHUB_SHA }}
+
+    # $env:GITHUB_SHA??
 
 jobs:
 
@@ -243,7 +245,7 @@ jobs:
     - name: Run the black box tests
       run: |
         cd $TEST_PROJECT
-        dotnet test -c Release -s ../$NUGET_PATH -s $NUGET_SOURCE
+        dotnet test -c Release --source ../$NUGET_PATH --source $NUGET_SOURCE
 
     - name: After
       run: |
