@@ -92,10 +92,11 @@ jobs:
         du -sh ./*
 
     # This approaches overrides any settings in nuget.config if it exists
+    # This approach retrieves all dependencies for the solution; see the ci script for more details
+
     - name: Load
       run: |
-        cd $PROJECT
-        dotnet restore -c Release --source $NUGET_SOURCE --packages ../$NUGET_PATH
+        dotnet restore --source $NUGET_SOURCE --packages $NUGET_PATH
 
     - name: Cache .NET packages
       id: cache-nuget
@@ -156,14 +157,12 @@ jobs:
     - name: Build the project with cached nuget
       if: steps.cache-restore.outputs.cache-hit == 'true'              
       run: |        
-        cd $PROJECT
-        dotnet build -c Release --no-incremental --no-restore --source ../$NUGET_PATH -o ../build
+        dotnet build $PROJECT/${PROJECT}.csproj -c Release --no-incremental --no-restore --source ./$NUGET_PATH -o ./buildtest
 
     - name: Build the project without cache
       if: steps.cache-restore.outputs.cache-hit == 'false'              
       run: |        
-        cd $PROJECT
-        dotnet build -c Release --no-incremental --source ../$NUGET_SOURCE -o ../build
+        dotnet build $PROJECT/${PROJECT}.csproj -c Release --no-incremental --source ./$NUGET_SOURCE -o ./buildtest
 
     - name: Pass the build on to the publish step 
       uses: actions/upload-artifact@v3
@@ -180,10 +179,7 @@ jobs:
   #============================================================
   #  TEST STAGE
   #
-  #  FUTURE: identify a way for the dotnet test command to use cached dependencies and the app build artifacts
-  #
-
-
+  
   test:
     name: API Black-Box Testing
 
@@ -232,11 +228,15 @@ jobs:
     # not where the app binaries are from the build step, and not where the test output is going 
     # (test output goes to the specificed --results-directory <blah> or to the default TestResults)
 
+    # also, currently, can't find documentation to pass the right argument for the dotnet test to use
+    # the nuget dependencies restored in the first ci step, BUT I think something's happening 
+    # "under the hood" such that the "no-restore" means it found the nuget directory somehow??
+
     - name: Test the project with cached nuget
       if: steps.cache-restore.outputs.cache-hit == 'true'              
       run: |        
         cd $PROJECT
-        dotnet test -c Release --no-incremental --no-restore --source ../$NUGET_PATH --source $NUGET_SOURCE -o ../test
+        dotnet test $TEST_PROJECT/${TEST_PROJECT}.csproj -c Release --no-restore -o buildtest
 
     - name: Test the project without cache
       if: steps.cache-restore.outputs.cache-hit == 'false'              
@@ -315,28 +315,8 @@ jobs:
         du -sh ./*
 
     - name: Publish the project with cache and artifacts
-      if: steps.cache-restore.outputs.cache-hit == 'true'              
       run: |        
-        cd $PROJECT
-        dotnet publish -c Release --no-incremental --no-restore --source ../$NUGET_PATH --source ../build -o ../publish
-
-    - name: Publish the project without cache but with artifacts (hopefully)
-      if: steps.cache-restore.outputs.cache-hit == 'false'              
-      run: |        
-        cd $PROJECT
-        dotnet publish -c Release --no-incremental --source ../build --source ../$NUGET_SOURCE -o ../publish
-
-    # Optimized by using the output from the previous build job, which includes
-    # not only the nuget dependencies, but the binaries for the api
-
-    - name: Publish the API
-      run: |
-        echo "default working directory, ${PWD}"
-        echo "PROJECT = ${PROJECT}"
-        cd $PROJECT
-        echo "project now working directory, ${PWD}"
-        ls ../build
-        dotnet publish -c Release -o ../publish 
+        dotnet publish $PROJECT/${PROJECT}.csproj -c Release --no-build -p:OutDir=../buildtest -o ./publish
 
     - name: After
       run: |

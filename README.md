@@ -5,12 +5,15 @@ As part of a larger system, this subsystem is a minimal API responsible for repo
 
 The API is a minimal API approach -- no controllers, just straight up querying through the minimal API setup to a few different HTTP GETs.
 
+The Github Actions implement a CI approach in stages -- build, test, publish -- using dotnet CLI commands.
+
 ## Tech Used
 
 - .NET 7
 - OpenApi
 - Minimal API
 - GitHub Actions
+- dotnet cli build steps
 
 ## How to Run
 

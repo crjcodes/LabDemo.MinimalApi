@@ -3,6 +3,10 @@
 # A convenience script for running dotnet from the CLI
 # Can be used to emulate what happens in ci pipelines 
 #
+# FOR LOCAL USE
+#   Although it could be adapted for the Github Actions, out of scope 
+#   for now
+#
 # For this api, it is indeed mirroring what the GitHub Actions are doing
 #
 
