@@ -52,7 +52,7 @@ env:
     PROJECT: LabDemo.MinimalApi
     NUGET_SOURCE: https://api.nuget.org/v3/index.json
     NUGET_PATH: .nuget
-    NUGET_CACHE_KEY: "${GITHUB_SHA}"
+    NUGET_CACHE_KEY: ${{ github.sha }}
     N1: $GITHUB_SHA
     N2: $GITHUB_SHA
     N3: ${GITHUB_SHA}
@@ -75,6 +75,7 @@ jobs:
       - name: check
         run: |
           echo $GITHUB_SHA
+          echo $NUGET_CACHE_KEY
           echo $N1
           echo $N2
           echo $N3
