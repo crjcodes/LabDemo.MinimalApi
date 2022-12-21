@@ -53,9 +53,9 @@ env:
     TEST_PROJECT: LabDemo.MinimalApi.Tests
     NUGET_SOURCE: https://api.nuget.org/v3/index.json
     NUGET_PATH: .nuget
-    NUGET_CACHE_KEY: ${{ nuget-${{ hashFiles('**/packages.lock.json') }} }}
 
-    #${{ runner.os }}-nuget-${{ hashFiles('*/*.csproj') }}
+    # interpolation of this is not yet working as an environment variable; repeating below instead
+#    NUGET_CACHE_KEY: ${{ runner.os }}-nuget-${{ hashFiles('*/*.csproj') }}
 
 jobs:
 
@@ -90,7 +90,7 @@ jobs:
       run: |
         echo "SOLUTION = $SOLUTION"
         echo "PROJECT = $PROJECT"
-        echo "NUGET CACHE KEY = " $NUGET_CACHE_KEY
+        echo "NUGET CACHE KEY = " ${{ runner.os }}-nuget-${{ hashFiles('*/*.csproj') }}
         echo "Total solution storage consumption before job for ${PWD}:" 
         du -sh ./*
 
@@ -106,7 +106,7 @@ jobs:
       uses: actions/cache@v3
       with:
         path: ./$NUGET_PATH
-        key: $NUGET_CACHE_KEY
+        key: ${{ runner.os }}-nuget-${{ hashFiles('*/*.csproj') }}
        
     - name: Check caching
       if: steps.cache-nuget.outpus.cache-hit != 'true'
@@ -154,7 +154,7 @@ jobs:
       uses: actions/cache@v3
       with:
         path: $NUGET_PATH
-        key: $NUGET_CACHE_KEY
+        key: ${{ runner.os }}-nuget-${{ hashFiles('*/*.csproj') }}
 
     - name: Build the project with cached nuget
       if: steps.cache-restore.outputs.cache-hit == 'true'              
@@ -221,7 +221,7 @@ jobs:
       uses: actions/cache@v3
       with:
         path: $NUGET_PATH
-        key: $NUGET_CACHE_KEY
+        key: ${{ runner.os }}-nuget-${{ hashFiles('*/*.csproj') }}
         
     # The -o parameter tells dotnet test where to find the TEST binaries for the app to run, 
     # not where the app binaries are from the build step, and not where the test output is going 
@@ -285,7 +285,7 @@ jobs:
       uses: actions/cache@v3
       with:
         path: $NUGET_PATH
-        key: $NUGET_CACHE_KEY
+        key: ${{ runner.os }}-nuget-${{ hashFiles('*/*.csproj') }}
 
     - name: Download api build artifacts for speed optimization
       uses: actions/download-artifact@v3
