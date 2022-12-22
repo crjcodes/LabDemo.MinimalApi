@@ -131,7 +131,7 @@ jobs:
     - name: Restore and build 
       run: |
         dotnet restore --source $NUGET_SOURCE --packages ./buildtest  
-        dotnet build -c Release --no-incremental --no-result -o ./buildtest 
+        dotnet build -c Release --no-incremental --no-restore -o ./buildtest 
 
     - name: Upload intermediate output as temporary artifacts for the next job
       uses: actions/upload-artifact@v3
@@ -260,6 +260,7 @@ jobs:
       with:
         name: ${PROJECT}
         path: ./publish
+        retention-days: 1      
 
   #============================================================
   #  DEPLOY STAGE
