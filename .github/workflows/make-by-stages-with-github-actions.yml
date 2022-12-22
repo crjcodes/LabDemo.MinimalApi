@@ -52,7 +52,7 @@ env:
     PROJECT: LabDemo.MinimalApi
     TEST_PROJECT: LabDemo.MinimalApi.Tests
     NUGET_SOURCE: https://api.nuget.org/v3/index.json
-    NUGET_PATH: .nuget
+    NUGET_PATH: ./.nuget
     # interpolation of this is not yet working as an environment variable; keeping a simple key for now, considering
     # the scope
 #    NUGET_CACHE_KEY: ${{ runner.os }}-nuget-${{ hashFiles('*/*.csproj') }}
