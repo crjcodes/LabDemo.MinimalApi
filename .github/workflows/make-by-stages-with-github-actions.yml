@@ -47,17 +47,26 @@ on: [push]
 # this case, the commit SHA should be enough, although not all that sophisticated.  Sometimes good enough is good
 # enough
 
+# *** GLOBAL ENVIRONMENT VARIABLES MUST BE VALUE OR VALUE COMBOS ONLY
+#
+# Shell parameter expansion is not possible outside of a run step, so global environment variables are really
+# just for values for now
+#
+# This example uses the commit SHA because the cache is used only for the duration of the workflow action
+# For better optimization in the future, we could try option #2
+# Instead, we can 
+#     1) For variables to passed from one step to another in the same job, 
+#       append variables assigned via parameter expansion to the GitHub environment file
+#       per https://stackoverflow.com/questions/60432844/how-to-perform-string-manipulation-while-declaring-env-vars-in-github-actions
+#     2) For variables passed to the next job, use job output https://docs.github.com/en/actions/using-jobs/defining-outputs-for-jobs
+
 env:    
     SOLUTION: LabDemo.MinimalApi
     PROJECT: LabDemo.MinimalApi
     TEST_PROJECT: LabDemo.MinimalApi.Tests
     NUGET_SOURCE: https://api.nuget.org/v3/index.json
     NUGET_PATH: nuget
-    # interpolation of this is not yet working as an environment variable; keeping a simple key for now, considering
-    # the scope
-#    NUGET_CACHE_KEY: ${{ runner.os }}-nuget-${{ hashFiles('*/*.csproj') }}
-    #FILEHASH: ${{ hashFiles('*/*.csproj') }}
-    #NUGET_CACHE_KEY: lab-demo-minimal-api-nuget-${FILEHASH}
+    NUGET_CACHE_KEY: $RUNNER_OS-$GITHUB_SHA 
 
 jobs:
 
@@ -92,10 +101,9 @@ jobs:
       run: |
         echo "SOLUTION = $SOLUTION"
         echo "PROJECT = $PROJECT"
-        echo "NUGET CACHE KEY = " ${{ runner.os }}-${{ hashFiles('**/*.csproj') }}
+        echo "NUGET CACHE KEY = " $NUGET_CACHE_KEY
         echo "NUGET_SOURCE = $NUGET_SOURCE"
         echo "NUGET PATH = $NUGET_PATH"
-        echo "FILEHASH = $FILE_HASH"
         echo "Total solution storage consumption before job for ${PWD}:" 
         du -sh ./*
 
@@ -116,22 +124,7 @@ jobs:
       uses: actions/cache@v3
       with:
         path: nuget
-        key: ${{ runner.os }}-${{ hashFiles('**/*.csproj') }}
-
-  temp_test:
-    name: Checking
-    defaults:
-      run:
-        shell: bash
-
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        dotnet-version: ['7.x.x' ]
-
-    steps:
-    - name: testing
-      run: echo $TESTING
+        key: $NUGET_CACHE_KEY
 
   ##============================================================
   ##  BUILD STAGE
