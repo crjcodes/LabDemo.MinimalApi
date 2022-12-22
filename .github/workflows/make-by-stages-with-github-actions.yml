@@ -120,11 +120,11 @@ jobs:
       uses: actions/cache@v3
       with:
         path: nuget
-        key: $GITHUB_SHA
+        key: Bah
 
     - name: Preserve key for later use
       id: cache-key
-      run: echo "NUGET_CACHE_KEY=" + $GITHUB_SHA >> $GITHUB_OUTPUT
+      run: echo "NUGET_CACHE_KEY=Bah" >> $GITHUB_OUTPUT
 
   #============================================================
   #  BUILD STAGE
@@ -162,14 +162,15 @@ jobs:
         echo "PROJECT = $PROJECT"
         echo "Total solution storage consumption before job for ${PWD}:" 
         du -sh ./*
-        echo "KEY=" + ${{needs.test.outputs.cache-key}}
+        echo "KEY="{{needs.restore.outputs.NUGET_CACHE_KEY}}
 
     - name: Restore Nuget cache
       id: cache-restore
       uses: actions/cache@v3
       with:
         path: $NUGET_PATH
-        key: ${{needs.test.outputs.cache-key}}
+        key: Bah
+
 
     - name: Build the project with cached nuget
       if: steps.cache-restore.outputs.cache-hit == 'true'              
