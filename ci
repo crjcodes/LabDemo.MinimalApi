@@ -1,5 +1,7 @@
 #!/usr/bin/bash
 #
+# Sync with the github actions yaml steps for best practice
+#
 # A convenience script for running dotnet from the CLI
 # Can be used to emulate what happens in ci pipelines 
 #
@@ -25,7 +27,7 @@ echo
 
 help()
 {
-  echo "Usage: ci [ -a|b|c|h|l|p|t|r ] 
+  echo "Usage: ci [ -a|b|c|h|l|p|t|r|z ] 
         Description:
                 -a  complete all ci steps
                 -b  perform the dotnet build step
@@ -33,6 +35,7 @@ help()
                 -h  help
                 -p  publish the app to the folder
                 -t  run the tests for the app
+                -z  restore and build the solution
                   "
   exit 2
 }
@@ -45,9 +48,9 @@ all()
   CLEAN_SIZE=`du -s`
   CLEAN_TIME=$(date +%s)
 
-  restore; echo
+  restoreBuild
 
-  build; echo
+  du -sh .
 
   echo
   test
@@ -128,6 +131,7 @@ publish()
 # if you need to restore for a specific subsystem (a specific .csproj), you'll need to 
 # generate dependencies per project.  I would still recommend a common packages folder
 # to reduce duplication of effort from subsystem project to subsystem project
+# EXCEPT... see notes in Github Actions yaml
 
 restore()
 {
@@ -145,6 +149,21 @@ restore()
   du -sh ./$NUGET_PATH
 }
 
+restoreBuild()
+{
+  echo "$LOG_DIVIDER RESTORE-BUILD"
+  dotnet restore --source $NUGET_SOURCE --packages ./buildtest  
+  dotnet build -c Release --no-incremental --no-restore -o ./buildtest 
+  
+  status=$?
+
+  if [[ $status -ne 0 ]]
+  then
+    echo "$LOG_DIVIDER RESTORE-BUILD FAILED"
+    exit $status
+  fi
+}
+
 test()
 {
   echo "$LOG_DIVIDER TEST"
@@ -160,12 +179,13 @@ test()
 
 }
 
-while getopts ahclbprt option; do
+while getopts ahclbprtz option; do
   case "${option}" in
     c) clean;;
     b) build;;
     p) publish;;
     r) restore;;
+    z) restoreBuild;;
     t) test;; 
     h) help;;
     a) all;;
