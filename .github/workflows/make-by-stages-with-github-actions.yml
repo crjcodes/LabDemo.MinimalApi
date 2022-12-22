@@ -106,8 +106,10 @@ jobs:
       run: |
         dotnet restore --source $NUGET_SOURCE --packages $NUGET_PATH
         du -sh $NUGET_PATH
-        echo ("NUGET_CACHE_KEY=" + ${{runner.os}}-${{ hashFiles('*/*.csproj') }}) >> $GITHUB_ENV
-        echo "NG=" + $NUGET_CACHE_KEY
+        echo ("BRANCH_NAME=" + $GITHUB_REF.replace('refs/heads/', '')) >> $GITHUB_ENV
+        echo $BRANCH_NAME
+        #echo ("NUGET_CACHE_KEY=" + ${{runner.os}}-${{ hashFiles('*/*.csproj') }}) >> $GITHUB_ENV
+        #echo "NG=" + $NUGET_CACHE_KEY
 
     - name: Cache .NET packages
       id: cache-nuget
