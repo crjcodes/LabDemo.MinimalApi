@@ -114,10 +114,6 @@ jobs:
         path: nuget
         key: ${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
        
-    - name: Check caching
-      if: steps.cache-nuget.outputs.cache-hit != 'true'
-      run: echo "Cache failure"
-
   ##============================================================
   ##  BUILD STAGE
   ##
