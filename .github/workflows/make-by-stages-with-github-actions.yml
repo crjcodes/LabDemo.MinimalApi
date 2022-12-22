@@ -126,71 +126,71 @@ jobs:
         path: nuget
         key: $NUGET_CACHE_KEY
 
-  ##============================================================
-  ##  BUILD STAGE
-  ##
-  ## Ensures that the code builds without errors with each push to the remote repo
-  ##
+  #============================================================
+  #  BUILD STAGE
+  #
+  # Ensures that the code builds without errors with each push to the remote repo
+  #
 
-  #build:
-  #  name: Build API
+  build:
+    name: Build API
 
-  #  # Use the Bash shell regardless whether the GitHub Actions runner is ubuntu-latest, macos-latest, or windows-latest
-  #  defaults:
-  #    run:
-  #      shell: bash
+    # Use the Bash shell regardless whether the GitHub Actions runner is ubuntu-latest, macos-latest, or windows-latest
+    defaults:
+      run:
+        shell: bash
 
-  #  runs-on: ubuntu-latest
-  #  strategy:
-  #    matrix:
-  #      dotnet-version: ['7.x.x' ]
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        dotnet-version: ['7.x.x' ]
 
-  #  needs: [restore]    
+    needs: [restore]    
 
-  #  steps:       
-  #  - name: Checkout
-  #    uses: actions/checkout@v3
+    steps:       
+    - name: Checkout
+      uses: actions/checkout@v3
 
-  #  - name: Set up .NET Core
-  #    uses: actions/setup-dotnet@v3
-  #    with:
-  #      dotnet-version: ${{ matrix.dotnet-version }}
+    - name: Set up .NET Core
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: ${{ matrix.dotnet-version }}
 
-  #  - name: Before
-  #    run: |
-  #      echo "SOLUTION = $SOLUTION"
-  #      echo "PROJECT = $PROJECT"
-  #      echo "Total solution storage consumption before job for ${PWD}:" 
-  #      du -sh ./*
+    - name: Before
+      run: |
+        echo "SOLUTION = $SOLUTION"
+        echo "PROJECT = $PROJECT"
+        echo "Total solution storage consumption before job for ${PWD}:" 
+        du -sh ./*
 
-  #  - name: Restore Nuget cache
-  #    id: cache-restore
-  #    uses: actions/cache@v3
-  #    with:
-  #      path: $NUGET_PATH
-  #      key: ${NUGET_CACHE_KEY}
+    - name: Restore Nuget cache
+      id: cache-restore
+      uses: actions/cache@v3
+      with:
+        path: $NUGET_PATH
+        key: $NUGET_CACHE_KEY
 
-  #  - name: Build the project with cached nuget
-  #    if: steps.cache-restore.outputs.cache-hit == 'true'              
-  #    run: |        
-  #      dotnet build $PROJECT/${PROJECT}.csproj -c Release --no-incremental --no-restore --source ./$NUGET_PATH -o ./buildtest
+    - name: Build the project with cached nuget
+      if: steps.cache-restore.outputs.cache-hit == 'true'              
+      run: |        
+        dotnet build $PROJECT/${PROJECT}.csproj -c Release --no-incremental --no-restore --source ./$NUGET_PATH -o ./buildtest
 
-  #  - name: Build the project without cache
-  #    if: steps.cache-restore.outputs.cache-hit == 'false'              
-  #    run: |        
-  #      dotnet build $PROJECT/${PROJECT}.csproj -c Release --no-incremental --source ./$NUGET_SOURCE -o ./buildtest
+    - name: Build the project without cache
+      if: steps.cache-restore.outputs.cache-hit == 'false'              
+      run: |        
+        dotnet build $PROJECT/${PROJECT}.csproj -c Release --no-incremental --source ./$NUGET_SOURCE -o ./buildtest
 
-  #  - name: Pass the build on to the publish step 
-  #    uses: actions/upload-artifact@v3
-  #    with:
-  #      name: api-build-output
-  #      path: ./build
-  #      retention-days: 1
+    - name: Pass the build on to the publish step 
+      uses: actions/upload-artifact@v3
+      with:
+        name: api-build-output
+        path: ./build
+        retention-days: 1
 
-  #  - name: After
-  #    run: |
-  #      echo "Total solution storage consumption before job for ${PWD}:" 
-  #      du -sh ./*
+    - name: After
+      run: |
+        echo "Total solution storage consumption before job for ${PWD}:" 
+        du -sh ./*
         
   ##============================================================
   ##  TEST STAGE
