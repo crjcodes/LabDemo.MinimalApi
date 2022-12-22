@@ -52,8 +52,6 @@ on: [push]
 # Shell parameter expansion is not possible outside of a run step, so global environment variables are really
 # just for values for now
 #
-# This example uses the commit SHA because the cache is used only for the duration of the workflow action
-# For better optimization in the future, we could try option #2
 # Instead, we can 
 #     1) For variables to passed from one step to another in the same job, 
 #       append variables assigned via parameter expansion to the GitHub environment file
@@ -66,7 +64,6 @@ env:
     TEST_PROJECT: LabDemo.MinimalApi.Tests
     NUGET_SOURCE: https://api.nuget.org/v3/index.json
     NUGET_PATH: nuget
-    NUGET_CACHE_KEY: $RUNNER_OS-$GITHUB_SHA 
 
 jobs:
 
@@ -88,6 +85,9 @@ jobs:
       matrix:
         dotnet-version: ['7.x.x' ]
 
+    outputs:
+      cache-key: ${{steps.cache-key.outputs.test}}
+
     steps:       
     - name: Checkout
       uses: actions/checkout@v3
@@ -101,7 +101,7 @@ jobs:
       run: |
         echo "SOLUTION = $SOLUTION"
         echo "PROJECT = $PROJECT"
-        echo "NUGET CACHE KEY = " $NUGET_CACHE_KEY
+        echo "NUGET CACHE KEY = $GITHUB_SHA"
         echo "NUGET_SOURCE = $NUGET_SOURCE"
         echo "NUGET PATH = $NUGET_PATH"
         echo "Total solution storage consumption before job for ${PWD}:" 
@@ -114,17 +114,17 @@ jobs:
       run: |
         dotnet restore --source $NUGET_SOURCE --packages $NUGET_PATH
         du -sh $NUGET_PATH
-        echo "TESTING=abba" >> $GITHUB_ENV
-
-    - name: Checking
-      run: echo $TESTING
 
     - name: Cache .NET packages
       id: cache-nuget
       uses: actions/cache@v3
       with:
         path: nuget
-        key: $NUGET_CACHE_KEY
+        key: $GITHUB_SHA
+
+    - name: Preserve key for later use
+      id: cache-key
+      run: echo "NUGET_CACHE_KEY=" + $GITHUB_SHA >> $GITHUB_OUTPUT
 
   #============================================================
   #  BUILD STAGE
@@ -162,13 +162,14 @@ jobs:
         echo "PROJECT = $PROJECT"
         echo "Total solution storage consumption before job for ${PWD}:" 
         du -sh ./*
+        echo "KEY=" + ${{needs.test.outputs.cache-key}}
 
     - name: Restore Nuget cache
       id: cache-restore
       uses: actions/cache@v3
       with:
         path: $NUGET_PATH
-        key: $NUGET_CACHE_KEY
+        key: ${{needs.test.outputs.cache-key}}
 
     - name: Build the project with cached nuget
       if: steps.cache-restore.outputs.cache-hit == 'true'              
