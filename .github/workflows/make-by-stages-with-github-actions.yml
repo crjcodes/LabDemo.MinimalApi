@@ -52,11 +52,12 @@ env:
     PROJECT: LabDemo.MinimalApi
     TEST_PROJECT: LabDemo.MinimalApi.Tests
     NUGET_SOURCE: https://api.nuget.org/v3/index.json
-    NUGET_PATH: ./.nuget
+    NUGET_PATH: nuget
     # interpolation of this is not yet working as an environment variable; keeping a simple key for now, considering
     # the scope
 #    NUGET_CACHE_KEY: ${{ runner.os }}-nuget-${{ hashFiles('*/*.csproj') }}
-    NUGET_CACHE_KEY: lab-demo-minimal-api-nuget
+    FILEHASH: ${{ hashFiles('*/*.csproj') }}
+    NUGET_CACHE_KEY: lab-demo-minimal-api-nuget-${FILEHASH}
 
 jobs:
 
@@ -91,9 +92,10 @@ jobs:
       run: |
         echo "SOLUTION = $SOLUTION"
         echo "PROJECT = $PROJECT"
-        echo "NUGET CACHE KEY = " $NUGET_CACHE_KEY
+        echo "NUGET CACHE KEY = " ${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
         echo "NUGET_SOURCE = $NUGET_SOURCE"
         echo "NUGET PATH = $NUGET_PATH"
+        echo "FILEHASH = $FILE_HASH"
         echo "Total solution storage consumption before job for ${PWD}:" 
         du -sh ./*
 
@@ -103,17 +105,14 @@ jobs:
     - name: Load
       run: |
         dotnet restore --source $NUGET_SOURCE --packages $NUGET_PATH
-        ls .
-        ls $NUGET_PATH
+        du -sh $NUGET_PATH
 
     - name: Cache .NET packages
       id: cache-nuget
       uses: actions/cache@v3
       with:
-        path: $NUGET_PATH
-        key: ${NUGET_CACHE_KEY}
-        restore-keys: |
-          ${NUGET_CACHE_KEY}
+        path: nuget
+        key: ${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
        
     - name: Check caching
       if: steps.cache-nuget.outputs.cache-hit != 'true'
