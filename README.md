@@ -42,6 +42,9 @@ var client = new LabClient(apiUrl, httpClient);
 var labwork = await client.LabRecordsAsync();
 ```
 
+# Upcoming Features/Issues
+
+TBD - The deployment to Azure is not working yet.
 
 # The System
 
