@@ -56,8 +56,8 @@ env:
     # interpolation of this is not yet working as an environment variable; keeping a simple key for now, considering
     # the scope
 #    NUGET_CACHE_KEY: ${{ runner.os }}-nuget-${{ hashFiles('*/*.csproj') }}
-    FILEHASH: ${{ hashFiles('*/*.csproj') }}
-    NUGET_CACHE_KEY: lab-demo-minimal-api-nuget-${FILEHASH}
+    #FILEHASH: ${{ hashFiles('*/*.csproj') }}
+    #NUGET_CACHE_KEY: lab-demo-minimal-api-nuget-${FILEHASH}
 
 jobs:
 
