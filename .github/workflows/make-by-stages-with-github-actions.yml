@@ -4,38 +4,13 @@
 #
 # Much, much room for optimization and bringing closer to the real world
 #
-# For this api, I'm lumping external dependencies, build output, and test 
-# dependencies in one subdirectory, then relying on dotnet publish to collect 
-# the essentials into another subdirectory for deployment.  See details below.
+# 1. Check the build
+# 2. Test the api
+# 3. Publish the api
+# 4. Deploy the api to azure
 #
-# PATHING
-#   Note if an app's project name is the same as a solution name, it can be confusing
+# See README.md for further details
 #
-#   GitHub checks out the repo into `/home/runner/work/{GithubProjectName}/{YourRepoName}`
-#
-#   So, this could lead to building a project of the same name in a directory like
-#       `/home/runner/work/TheLarryApp/TheLarryApp/TheLarryApp`
-#
-#   Matching the `/home/runner/work/{GithubProjectName}` supplied by the GitAction checkout
-#       then the repo name, `/home/runner/work/{GitHubProjectName}/{YourRepoName}` where the sln lives
-#       then perhaps the project, `/home/runner/work/{GitHubProjectName}/{YourRepoName}/{YourProjectName}`
-#           containing `csproj`
-#
-# DOTNET AND CI OPTIMIZATION INCOMPATIBILITY
-#
-#   In theory, one could restore nuget dependencies once at the beginning, then use throughout ci steps
-#   In theory, one could store results of the dotnet build in a custom directory and use in successive commands
-#
-#   In reality, the dotnet commands are not built to be used in this manner, and it's very difficult to set up
-#   cache with nuget dependencies, temporary artifacts from the build, successive ci steps using said cache and
-#   artifacts, and CONFIRMING that the setup is working as expected and that successive dotnet commands are not
-#   just rebuilding the whole darn thing again, and managing the caches and artifacts that build up over time.
-#
-#   This demo's current approach: 
-#       1. Build the solution (implicitly restoring nuget dependencies) and carrying over as artifacts
-#       2. Test the api via the test project (hopefully using the artifacts from step 1)
-#       3. Publish the api (hopefully using the artifacts from step 1)
-#       4. Deploy the api to Azure
 #
 # TRACEABILITY
 #
@@ -46,36 +21,6 @@
 name: LabDemo.MinimalApi.BuildByStages
 run-name: ${{ github.actor }} is experimenting with GitHub actions 🚀
 on: [push]
-
-# ABOUT CACHING
-#
-# Getting caching to work properly for these discrete ci steps turned out to be out of scope.
-#
-# 1.  The documentation encourages a cache key with package-lock.json, but this scaffolding doesn't have such
-#       Instead, I did try to use the csproj files instead, but...
-#
-# 2.  Setting a global environment variable based on expressions does NOT work, so one needs to repeat the cache key
-#       in every spot it's used.
-#
-# 3.  Picking the right cache key specific (or non-specific) enough requires some thinking; see the GitHub Actions docs
-#
-# If I was dealing with a rather large solution with multiple projects and different subsets of external dependencies, 
-# I would definitely revisit the caching of nugets
-#
-#
-# GLOBAL VARIABLE ISSUES
-#
-# *** GLOBAL ENVIRONMENT VARIABLES MUST BE VALUE OR VALUE COMBOS ONLY
-#
-# Shell parameter expansion is not possible outside of a run step, so global environment variables are really
-# just for values for now
-#
-#     1) For variables to passed from one step to another in the same job, 
-#       append variables assigned via parameter expansion to the GitHub environment file
-#       per https://stackoverflow.com/questions/60432844/how-to-perform-string-manipulation-while-declaring-env-vars-in-github-actions
-#     2) For variables passed to the next job, use job output https://docs.github.com/en/actions/using-jobs/defining-outputs-for-jobs
-#
-# In this demo's case, I've simplified to artifacts only, thereby ducking the cache-key-variable issues
 
 env:    
     SOLUTION: LabDemo.MinimalApi
@@ -115,34 +60,12 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v3
 
-    - name: Before
-      run: |
-        echo "SOLUTION = $SOLUTION"
-        echo "PROJECT = $PROJECT"
-        echo "Total solution storage consumption before job for ${PWD}:" 
-        du -sh ./*
-
-    # here, unlike some of the examples out there, the external dependencies
-    # and the entire solution's build output are put in a common directory
-    # A solution might grow to the point where one needs to break out different
-    # projects of the system into different build steps and output directories, 
-    # to optimize
-
     - name: Restore and build 
       run: |
-        dotnet restore --source $NUGET_SOURCE --packages ./buildtest  
-        dotnet build -c Release --no-incremental --no-restore -o ./buildtest 
-
-    - name: Upload intermediate output as temporary artifacts for the next job
-      uses: actions/upload-artifact@v3
-      with:
-        name: build-output-with-dependencies
-        path: ./buildtest
-        retention-days: 1
-
-    - name: After
-      run: |
         echo "Total solution storage consumption before job for ${PWD}:" 
+        du -sh ./*
+        dotnet build -c Release --no-incremental -o ./buildtest
+        echo "Total solution storage consumption after job for ${PWD}:" 
         du -sh ./*
         
   ##============================================================
@@ -175,27 +98,14 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v3
 
-    - name: Download intermediate build products
-      uses: actions/dowload-artifact@v3
-      with:
-        name: build-output-with-dependencies
-
-    - name: Before
-      run: |
-        echo "SOLUTION = $SOLUTION"
-        echo "TEST_PROJECT = $TEST_PROJECT"
-        echo "Running in ${PWD}"
-        echo "Total solution storage consumption before job for ${PWD}:" 
-        du -sh ./*
-
     - name: Test all of the solution with artifacts from previous job
       run: |        
-        dotnet test -c Release --no-restore -o buildtest
-
-    - name: After
-      run: |
+        echo "Total solution storage consumption before job for ${PWD}:" 
+        du -sh ./*
+        dotnet test -c Release -o ./buildtest
         echo "Total solution storage consumption after job for ${PWD}:" 
         du -sh ./*
+
 
   #============================================================
   #  PUBLISH STAGE
@@ -226,41 +136,14 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v3
 
-    - name: Before
+    - name: Publish the api
       run: |
         echo "Total solution storage consumption before job for ${PWD}:" 
         du -sh ./*
-
-    - name: Download intermediate build products
-      uses: actions/dowload-artifact@v3
-      with:
-        name: build-output-with-dependencies
-
-    - name: Check artifact download
-      run: |
-        echo "default working directory, ${PWD}:"
-        ls
-
-    - name: After cache and artifacts
-      run: |
-        echo "Total solution storage consumption after artifacts for ${PWD}:" 
-        du -sh ./*
-
-    - name: Publish the project with artifacts
-      run: |        
-        dotnet publish -c Release --no-build -p:OutDir=./buildtest -o ./publish
-
-    - name: After
-      run: |
+        dotnet publish -c Release -p:OutDir=./buildtest -o ./publish
         echo "Total solution storage consumption before job for ${PWD}:" 
         du -sh ./*
 
-    - name: Upload artifact for deployment job
-      uses: actions/upload-artifact@v2
-      with:
-        name: ${PROJECT}
-        path: ./publish
-        retention-days: 1      
 
   #============================================================
   #  DEPLOY STAGE
@@ -268,6 +151,7 @@ jobs:
   deploy-azure:
     name: Deploy to Azure
 
+    # Use the Bash shell regardless whether the GitHub Actions runner is ubuntu-latest, macos-latest, or windows-latest
     defaults:
       run:
         shell: bash
@@ -281,16 +165,14 @@ jobs:
       url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
 
     steps:
-      - name: Download artifact from publish job
-        uses: actions/download-artifact@v2
-        with:
-          name: ${PROJECT}
+    - name: Publish the api
+      run: dotnet publish -c Release -p:OutDir=./buildtest -o ./publish
 
-      - name: Deploy to Azure Web App
-        id: deploy-to-webapp
-        uses: azure/webapps-deploy@v2
-        with:
-          app-name: 'LabDemo-MinimalApi-Code'
-          slot-name: 'production'
-          publish-profile: ${{ secrets.AzureAppService_PublishProfile_a3c3d11e8d764bfdbf88856aa7a173c4 }}
-          package: ./publish
+    - name: Deploy to Azure Web App
+      id: deploy-to-webapp
+      uses: azure/webapps-deploy@v2
+      with:
+        app-name: 'LabDemo-MinimalApi-Code'
+        slot-name: 'production'
+        publish-profile: ${{ secrets.AzureAppService_PublishProfile_a3c3d11e8d764bfdbf88856aa7a173c4 }}
+        package: ./publish

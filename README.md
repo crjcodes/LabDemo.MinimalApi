@@ -98,8 +98,87 @@ Some possible goals for testing
 
 ### CI-CD
 
-1. Investigate GitHub for support of ci-cd stages
-1. Develop a strategy for ci-cd stages locally and deployed
+ 1. Check the build
+ 2. Test the api
+ 3. Publish the api
+ 4. Deploy the api to azure
+
+ #### OPTIMIZATIONS
+
+ Thinking through cache and artifacts, at looking at the sizes of external dependencies and 
+ intermediate build products sizes, I decided 
+ - Not to pull external dependencies down in one job and cache for further jobs
+     - GitHub Actions aren't quite suited for the kind of caching I wanted for NuGet dependencies
+     - Caching has issues due to both dotnet and GitHub Actions
+         - dotnet implicit restores are hard to override, especially for test
+         - GitHub Actions don't allow for expressions in cache keys
+         - GitHub Actions also have some wonkiness in using keys
+     - No impactful gains in pulling from a cache over pulling from a nuget source, or vice versa, for this project
+ - Not to artifact the external dependencies
+     - Pull down 700Mb from the nuget source, upload it as a compressed artifact, download the
+     artifact in the next job, then the next job, is not that much different than
+     downloading the dependencies in each job, direct from nuget
+- Not to pass intermediate builds as artifacts to the next job
+    - Time for the dotnet command to run with and without artifacts is not a performance hit
+    - Artifacts or no artifacts, the outputs will still consume the same of storage
+
+This means there is redundancy in each job as the API is re-built each time with fresh dependency pulls.
+
+#### OTHER NOTES
+##### PATHING
+-   Note if an app's project name is the same as a solution name, it can be confusing
+   GitHub checks out the repo into `/home/runner/work/{GithubProjectName}/{YourRepoName}`
+
+    -   So, this could lead to building a project of the same name in a directory like
+       `/home/runner/work/TheLarryApp/TheLarryApp/TheLarryApp`
+
+    - Matching the `/home/runner/work/{GithubProjectName}` supplied by the GitAction checkout
+       then the repo name, `/home/runner/work/{GitHubProjectName}/{YourRepoName}` where the sln lives
+       then perhaps the project, `/home/runner/work/{GitHubProjectName}/{YourRepoName}/{YourProjectName}`
+           containing `csproj`
+
+##### DOTNET AND CI OPTIMIZATION INCOMPATIBILITY
+
+In theory, one could restore nuget dependencies once at the beginning, then use throughout ci steps
+
+In theory, one could store results of the dotnet build in a custom directory and use in successive commands
+
+In reality, the dotnet commands are not built to be used in this manner, and it's very difficult to set up
+cache with nuget dependencies, temporary artifacts from the build, successive ci steps using said cache and
+artifacts, and CONFIRMING that the setup is working as expected and that successive dotnet commands are not
+just rebuilding the whole darn thing again, and managing the caches and artifacts that build up over time.
+
+##### TRACEABILITY
+
+A crude approach where steps dump output is the traceability of the moment. OpenTelemetry looks interesting, but is beyond scope for noe
+
+##### ABOUT CACHING
+
+ Getting caching to work properly for these discrete ci steps turned out to be out of scope.
+
+ 1.  The documentation encourages a cache key with package-lock.json, but this scaffolding doesn't have such
+       Instead, I did try to use the csproj files instead, but...
+
+ 2.  Setting a global environment variable based on expressions does NOT work, so one needs to repeat the cache key
+       in every spot it's used.
+
+ 3.  Picking the right cache key specific (or non-specific) enough requires some thinking; see the GitHub Actions docs
+
+ If I was dealing with a rather large solution with multiple projects and different subsets of external dependencies, 
+ I would definitely revisit the caching of nugets
+
+
+##### GLOBAL VARIABLE ISSUES
+
+ *** GLOBAL ENVIRONMENT VARIABLES MUST BE VALUE OR VALUE COMBOS ONLY
+
+ Shell parameter expansion is not possible outside of a run step, so global environment variables are really
+ just for values for now
+
+     1) For variables to passed from one step to another in the same job, 
+       append variables assigned via parameter expansion to the GitHub environment file
+       per https://stackoverflow.com/questions/60432844/how-to-perform-string-manipulation-while-declaring-env-vars-in-github-actions
+     2) For variables passed to the next job, use job output https://docs.github.com/en/actions/using-jobs/defining-outputs-for-jobs
 
 ### DEPLOYMENT
 
