@@ -92,7 +92,7 @@ jobs:
       run: |
         echo "SOLUTION = $SOLUTION"
         echo "PROJECT = $PROJECT"
-        echo "NUGET CACHE KEY = " ${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
+        echo "NUGET CACHE KEY = " ${{ runner.os }}-${{ hashFiles('**/*.csproj') }}
         echo "NUGET_SOURCE = $NUGET_SOURCE"
         echo "NUGET PATH = $NUGET_PATH"
         echo "FILEHASH = $FILE_HASH"
@@ -106,13 +106,15 @@ jobs:
       run: |
         dotnet restore --source $NUGET_SOURCE --packages $NUGET_PATH
         du -sh $NUGET_PATH
+        echo ("NUGET_CACHE_KEY=" + ${{runner.os}}-${{ hashFiles('*/*.csproj') }}) >> $GITHUB_ENV
+        echo "NG=" + $NUGET_CACHE_KEY
 
     - name: Cache .NET packages
       id: cache-nuget
       uses: actions/cache@v3
       with:
         path: nuget
-        key: ${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
+        key: ${{ runner.os }}-${{ hashFiles('**/*.csproj') }}
        
   ##============================================================
   ##  BUILD STAGE
