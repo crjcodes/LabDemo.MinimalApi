@@ -41,7 +41,7 @@ on: [push]
 
 # The NUGET_KEY is flexible; for instance, examples exist to make it update when package-lock.json changes, but
 # note by default .NET projects do not typically use the package lock file, so that condition would always be met
-# for this project
+# for this project BUT right now, interpolation isn't working such that we can set a global key variable (see below)
 #
 # Another option would be to detect changes to the .csproj file, then update the cache based on that, but for
 # this case, the commit SHA should be enough, although not all that sophisticated.  Sometimes good enough is good
@@ -53,9 +53,10 @@ env:
     TEST_PROJECT: LabDemo.MinimalApi.Tests
     NUGET_SOURCE: https://api.nuget.org/v3/index.json
     NUGET_PATH: .nuget
-
-    # interpolation of this is not yet working as an environment variable; repeating below instead
+    # interpolation of this is not yet working as an environment variable; keeping a simple key for now, considering
+    # the scope
 #    NUGET_CACHE_KEY: ${{ runner.os }}-nuget-${{ hashFiles('*/*.csproj') }}
+    NUGET_CACHE_KEY: lab-demo-minimal-api-nuget
 
 jobs:
 
@@ -90,7 +91,7 @@ jobs:
       run: |
         echo "SOLUTION = $SOLUTION"
         echo "PROJECT = $PROJECT"
-        echo "NUGET CACHE KEY = " ${{ runner.os }}-nuget-${{ hashFiles('*/*.csproj') }}
+        echo "NUGET CACHE KEY = " $NUGET_CACHE_KEY
         echo "NUGET_SOURCE = $NUGET_SOURCE"
         echo "NUGET PATH = $NUGET_PATH"
         echo "Total solution storage consumption before job for ${PWD}:" 
@@ -110,7 +111,9 @@ jobs:
       uses: actions/cache@v3
       with:
         path: $NUGET_PATH
-        key: ${{ runner.os }}-nuget-${{ hashFiles('*/*.csproj') }}
+        key: ${NUGET_CACHE_KEY}
+        restore-keys: |
+          ${NUGET_CACHE_KEY}
        
     - name: Check caching
       if: steps.cache-nuget.outpus.cache-hit != 'true'
@@ -158,7 +161,7 @@ jobs:
       uses: actions/cache@v3
       with:
         path: $NUGET_PATH
-        key: ${{ runner.os }}-nuget-${{ hashFiles('*/*.csproj') }}
+        key: ${NUGET_CACHE_KEY}
 
     - name: Build the project with cached nuget
       if: steps.cache-restore.outputs.cache-hit == 'true'              
@@ -225,7 +228,7 @@ jobs:
       uses: actions/cache@v3
       with:
         path: $NUGET_PATH
-        key: ${{ runner.os }}-nuget-${{ hashFiles('*/*.csproj') }}
+        key: ${NUGET_CACHE_KEY}
         
     # The -o parameter tells dotnet test where to find the TEST binaries for the app to run, 
     # not where the app binaries are from the build step, and not where the test output is going 
@@ -289,7 +292,7 @@ jobs:
       uses: actions/cache@v3
       with:
         path: $NUGET_PATH
-        key: ${{ runner.os }}-nuget-${{ hashFiles('*/*.csproj') }}
+        key: ${NUGET_CACHE_KEY}
 
     - name: Download api build artifacts for speed optimization
       uses: actions/download-artifact@v3
