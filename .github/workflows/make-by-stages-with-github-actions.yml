@@ -106,10 +106,10 @@ jobs:
       run: |
         dotnet restore --source $NUGET_SOURCE --packages $NUGET_PATH
         du -sh $NUGET_PATH
-        echo ("BRANCH_NAME=" + $GITHUB_REF.replace('refs/heads/', '')) >> $GITHUB_ENV
-        echo $BRANCH_NAME
-        #echo ("NUGET_CACHE_KEY=" + ${{runner.os}}-${{ hashFiles('*/*.csproj') }}) >> $GITHUB_ENV
-        #echo "NG=" + $NUGET_CACHE_KEY
+        echo "TESTING=abba" >> $GITHUB_ENV
+
+    - name: Checking
+      run: echo $TESTING
 
     - name: Cache .NET packages
       id: cache-nuget
@@ -117,7 +117,22 @@ jobs:
       with:
         path: nuget
         key: ${{ runner.os }}-${{ hashFiles('**/*.csproj') }}
-       
+
+  temp_test:
+    name: Checking
+    defaults:
+      run:
+        shell: bash
+
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        dotnet-version: ['7.x.x' ]
+
+    steps:
+    - name: testing
+      run: echo $TESTING
+
   ##============================================================
   ##  BUILD STAGE
   ##
