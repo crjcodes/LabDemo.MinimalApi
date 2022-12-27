@@ -37,34 +37,27 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-
 // FUTURE: determine how to setup redirection properly for testing to pass in the CI pipeline
 // (see the github action runners)
 //app.UseHttpsRedirection();
 
-
 // In the real world, this would be coming from a service -- data access, dbContext, or repo, etc
-
 var records = builder.Configuration.GetSection("LabRecords").Get<List<FlattenedLabRecord>>();
 
 // API ROUTING
 
-//app.MapGet("/", () => { return "Hello"; });
 app.MapGet("/", () => { return records; });
 
 app.MapGet("/LabRecords", () => { return records; })
-//    .WithName("LabRecordss")
     .WithOpenApi();
 
 app.MapGet("/LabNames", () => { return records?.Select(r => r.Name).Distinct(); })
-//    .WithName("LabNames")
     .WithOpenApi();
 
 app.MapGet("/LabRecords/Search", (string LabName) =>
 {
     return records?.Where(r => r.Name.ToUpper() == LabName.ToUpper());
 })
-//    .WithName("SearchLabNames")
     .WithOpenApi();
 
 // REFERENCE

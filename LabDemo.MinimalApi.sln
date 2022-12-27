@@ -14,6 +14,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "CI-CD", "CI-CD", "{2649B06E
 	ProjectSection(SolutionItems) = preProject
 		ci = ci
 		.github\workflows\make-by-stages-with-github-actions.yml = .github\workflows\make-by-stages-with-github-actions.yml
+		nuget.config = nuget.config
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LabDemo.MinimalApi.Tests", "LabDemo.MinimalApi.Tests\LabDemo.MinimalApi.Tests.csproj", "{FEE0519C-FAA2-4473-9AB6-698162F61E22}"
