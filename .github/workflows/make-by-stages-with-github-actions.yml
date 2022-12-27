@@ -76,7 +76,7 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v3
 
-    - name: Test all of the solution with artifacts from previous job
+    - name: Test all of the solution rebuilding all needed
       run: |        
         echo "Total solution storage consumption before job for ${PWD}:" 
         du -sh ./*
