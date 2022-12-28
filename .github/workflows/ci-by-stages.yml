@@ -28,7 +28,7 @@ env:
     TEST_PROJECT: LabDemo.MinimalApi.Tests
     NUGET_SOURCE: https://api.nuget.org/v3/index.json
     NUGET_PATH: nuget
-    BUILD_ARTIFACT_NAME: LabDemo.MinimalApi.build.product
+    BUILD_ARTIFACT_NAME: build
     BUILD_PATH: build
     PUBLISH_PATH: publish
 
@@ -84,15 +84,15 @@ jobs:
 
     - name: Download artifact from build job
       uses: actions/download-artifact@v3
-      with:
-        name: ${{env.BUILD_ARTIFACT_NAME}}
-        path: ../
 
     # artifacts are overkill for this small of project, but done as a 
     # poc and best practice for larger systems
 
     - name: Test all of the solution rebuilding all needed
-      run: dotnet test $TEST_PROJECT/$TEST_PROJECT.csproj -c Release -o $BUILD_PATH
+      run: |
+        pwd
+        ls
+        dotnet test $TEST_PROJECT/$TEST_PROJECT.csproj -c Release -o $BUILD_PATH
 
 
   #============================================================
