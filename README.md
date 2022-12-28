@@ -185,7 +185,7 @@ A crude approach where steps dump output is the traceability of the moment. Open
 
 ### DEPLOYMENT
 
-Currently, I've been running these only in debug, locally.  I do have a free Azure account that I may be able to deploy to.
+See [DEPLOYMENT.md](./DEPLOYMENT.md)
 
 ### MONITORING
 

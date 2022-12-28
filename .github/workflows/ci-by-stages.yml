@@ -1,0 +1,121 @@
+﻿###########################################################################################
+#
+# Barebones of continuous integration in stages
+#
+# Much, much room for optimization and bringing closer to the real world
+#
+# 1. Check the build
+# 2. Test the api
+# 3. Publish the api
+# 4. Deploy the api to azure
+#
+# See README.md for further details
+#
+#
+# TRACEABILITY
+#
+#   A crude approach where steps dump output is the traceability of the moment.
+#   OpenTelemetry looks interesting, but is beyond scope for noe
+#
+
+name: LabDemo.MinimalApi.BuildByStages
+run-name: ${{ github.actor }} is experimenting with GitHub actions 🚀
+on: [push]
+
+env:    
+    SOLUTION: LabDemo.MinimalApi
+    PROJECT: LabDemo.MinimalApi
+    TEST_PROJECT: LabDemo.MinimalApi.Tests
+    NUGET_SOURCE: https://api.nuget.org/v3/index.json
+    NUGET_PATH: nuget
+    BUILD_ARTIFACT_NAME: LabDemo.MinimalApi.build.product
+    BUILD_PATH: ./build
+
+jobs:
+
+  #============================================================
+  #  BUILD STAGE
+  #
+  #  Ensures that the solution builds without errors with each push to the remote repo
+  #  Restores external dependencies and builds the API
+  #
+
+  build:
+    name: Build API
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+
+    steps:       
+       
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    - name: Restore and build just the API subsystem
+      run: dotnet build $PROJECT/$PROJECT.csproj -c Release --no-incremental -o $BUILD_PATH
+
+    # artifacts are overkill for this small of project, but done as a 
+    # poc and best practice for larger systems
+
+    - name: Upload artifact for test and publish jobs
+      uses: actions/upload-artifact@v3
+      with:
+        name: $BUILD_ARTIFACT_NAME
+        path: ${{env.DOTNET_ROOT}}/$BUILD_PATH
+        
+  ##============================================================
+  ##  TEST STAGE
+  ##
+  
+  test:
+    name: API Black-Box Testing
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+
+    needs: [build]       
+    steps:     
+
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    - name: Download artifact from build job
+      uses: actions/download-artifact@v3
+      with:
+        name: $BUILD_ARTIFACT_NAME
+
+    # artifacts are overkill for this small of project, but done as a 
+    # poc and best practice for larger systems
+
+    - name: Test all of the solution rebuilding all needed
+      run: dotnet test $TEST_PROJECT/$TEST_PROJECT.csproj -c Release -o $BUILD_PATH
+
+
+  #============================================================
+  #  PUBLISH STAGE
+
+  publish:
+    name: Publish the API
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+
+    needs: [test]    
+    steps:
+
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    - name: Download artifact from build job
+      uses: actions/download-artifact@v3
+      with:
+        name: $BUILD_ARTIFACT_NAME
+
+    # artifacts are overkill for this small of project, but done as a 
+    # poc and best practice for larger systems
+
+    - name: Publish the api
+      run: dotnet publish $PROJECT/$PROJECT.csproj -c Release -p:OutDir=./$BUILD_PATH -o ./publish
