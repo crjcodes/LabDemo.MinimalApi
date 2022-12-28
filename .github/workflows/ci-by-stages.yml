@@ -93,7 +93,7 @@ jobs:
       with:
         name: ${{env.BUILD_ARTIFACT_NAME}}
         path: ${{env.BUILD_PATH}}
-        retention-day: 1
+        retention-days: 1
         
   ##============================================================
   ##  TEST STAGE
@@ -200,7 +200,7 @@ jobs:
       with:
         name: ${{env.PUBLISH_ARTIFACT_NAME}}
         path: ${{env.PUBLISH_PATH}}
-        retention-day: 3
+        retention-days: 3
 
   #============================================================
   #  DEPLOY STAGE
@@ -212,6 +212,12 @@ jobs:
     defaults:
       run:
         shell: bash
+
+    # this relies on GitHub settings for the production environment
+    # that require manual approval before deployment
+
+    environment:
+      name: production
 
     needs: [publish]    
     steps:
@@ -225,6 +231,11 @@ jobs:
       run: |
         du -sh ./*
 
-    - name: Placeholder
-      run: |
-        echo "TBD Deploy"
+    - name: Deploy to Azure Web App
+      id: deploy-to-webapp
+      uses: azure/webapps-deploy@v2
+      with:
+        app-name: 'LabDemo-MinimalApi-Code'
+        slot-name: 'Production'
+        publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_FEB370F5C81A4C1EBA8D302EC1CB0084 }}
+        package: .
