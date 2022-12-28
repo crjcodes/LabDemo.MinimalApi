@@ -62,7 +62,7 @@ jobs:
       uses: actions/upload-artifact@v3
       with:
         name: $BUILD_ARTIFACT_NAME
-        path: ${{env.DOTNET_ROOT}}/$BUILD_PATH
+        path: ${{env.DOTNET_ROOT}}/${{env.BUILD_PATH}}
         
   ##============================================================
   ##  TEST STAGE
