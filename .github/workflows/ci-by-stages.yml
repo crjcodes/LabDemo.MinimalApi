@@ -86,6 +86,7 @@ jobs:
       uses: actions/download-artifact@v3
       with:
         name: ${{env.BUILD_ARTIFACT_NAME}}
+        path: ${{env.DOTNET_ROOT}}
 
     # artifacts are overkill for this small of project, but done as a 
     # poc and best practice for larger systems
