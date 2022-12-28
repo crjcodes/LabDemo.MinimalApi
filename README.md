@@ -15,6 +15,7 @@ The Github Actions implement a CI approach in stages -- build, test, publish -- 
 - GitHub Actions
 - dotnet cli build steps
 
+# How To
 ## How to Run
 
 Just check out the git repository, open the solution in Visual Studio, and run.  A browser window will appear with Swagger:
@@ -41,6 +42,15 @@ var httpClient = new HttpClient();
 var client = new LabClient(apiUrl, httpClient);
 var labwork = await client.LabRecordsAsync();
 ```
+
+## How to Test Code
+
+`dotnet test...`
+
+## How to Test CI
+
+You can emulate the steps taken in the ci yaml by running the bash script `ci` from the command line.
+
 
 # Upcoming Features/Issues
 
