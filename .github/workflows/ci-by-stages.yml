@@ -29,7 +29,7 @@ env:
     NUGET_SOURCE: https://api.nuget.org/v3/index.json
     NUGET_PATH: nuget
     BUILD_ARTIFACT_NAME: LabDemo.MinimalApi.build.product
-    BUILD_PATH: ./build
+    BUILD_PATH: build
 
 jobs:
 
