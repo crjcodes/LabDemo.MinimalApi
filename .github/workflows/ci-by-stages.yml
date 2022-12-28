@@ -114,6 +114,17 @@ jobs:
       run: |
         du -sh ./*
 
+    - name: Nuget from cache
+      id: cache-nuget
+      uses: actions/cache@v3
+      with:
+        path: nuget
+        key: nuget-${{ hashFiles('*/*.csproj')}}
+
+    - name: Validate directory state
+      run: |
+        du -sh ./*
+
     - name: Download artifact from build job
       uses: actions/download-artifact@v3
 
@@ -149,6 +160,17 @@ jobs:
 
     - name: Checkout
       uses: actions/checkout@v3
+
+    - name: Validate directory state
+      run: |
+        du -sh ./*
+
+    - name: Nuget from cache
+      id: cache-nuget
+      uses: actions/cache@v3
+      with:
+        path: nuget
+        key: nuget-${{ hashFiles('*/*.csproj')}}
 
     - name: Validate directory state
       run: |
