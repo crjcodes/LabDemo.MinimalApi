@@ -31,6 +31,7 @@ env:
     BUILD_ARTIFACT_NAME: build
     BUILD_PATH: build
     PUBLISH_PATH: publish
+    VALIDATE: true
 
 jobs:
 
@@ -39,8 +40,16 @@ jobs:
   #
   #  Ensures that the solution builds without errors with each push to the remote repo
   #  Restores external dependencies and builds the API
+  #  Caching nuget dependencies is a bit overkill for a small project, but
+  #  good practice
   #
-
+  #  A nuget.config file has been added to the solution, which will hopefully 
+  #  direct all dotnet CLI steps to the appropriate source and package directory
+  #
+  #  The path of 'nuget' is synchronized with the ci bash shell script included in
+  #  the solution; the ci script can be used to emulate the steps taken here, emulating
+  #  in the local environment
+  
   build:
     name: Build API
     runs-on: ubuntu-latest
@@ -48,10 +57,22 @@ jobs:
       run:
         shell: bash
 
+    needs: [restore]      
     steps:       
        
     - name: Checkout
       uses: actions/checkout@v3
+
+    - name: Cache the nuget
+      id: cache-nuget
+      uses: actions/cache@v3
+      with:
+        path: nuget
+        key: nuget-${{ hashFiles('*/*.csproj')}}
+
+    - name: Install dependencies
+      if: steps.cache-nuget.outpus.cache-hit != true
+      run: dotnet restore
 
     - name: Restore and build just the API subsystem
       run: dotnet build $PROJECT/$PROJECT.csproj -c Release --no-incremental -o $BUILD_PATH
@@ -88,10 +109,10 @@ jobs:
     # artifacts are overkill for this small of project, but done as a 
     # poc and best practice for larger systems
 
-    - name: Test all of the solution rebuilding all needed
+    - name: Test the api
       run: |
         pwd
-        ls
+        du -sh .
         dotnet test $TEST_PROJECT/$TEST_PROJECT.csproj -c Release -o $BUILD_PATH
 
 
@@ -113,8 +134,6 @@ jobs:
 
     - name: Download artifact from build job
       uses: actions/download-artifact@v3
-      with:
-        name: ${{env.BUILD_ARTIFACT_NAME}}
 
     # artifacts are overkill for this small of project, but done as a 
     # poc and best practice for larger systems
