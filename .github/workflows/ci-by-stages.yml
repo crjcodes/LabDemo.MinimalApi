@@ -29,6 +29,7 @@ env:
     NUGET_SOURCE: https://api.nuget.org/v3/index.json
     NUGET_PATH: nuget
     BUILD_ARTIFACT_NAME: build
+    PUBLISH_ARTIFACT_NAME: publish
     BUILD_PATH: build
     PUBLISH_PATH: publish
     VALIDATE: true
@@ -77,7 +78,7 @@ jobs:
       run: |
         du -sh ./*
 
-    - name: Restore and build just the API subsystem
+    - name: Build just the API subsystem
       run: dotnet build $PROJECT/$PROJECT.csproj -c Release --no-incremental -o $BUILD_PATH
 
     - name: Validate directory state
@@ -92,6 +93,7 @@ jobs:
       with:
         name: ${{env.BUILD_ARTIFACT_NAME}}
         path: ${{env.BUILD_PATH}}
+        retention-day: 1
         
   ##============================================================
   ##  TEST STAGE
@@ -192,3 +194,37 @@ jobs:
     - name: Validate directory state
       run: |
         du -sh ./*
+
+    - name: Upload artifact for deployment
+      uses: actions/upload-artifact@v3
+      with:
+        name: ${{env.PUBLISH_ARTIFACT_NAME}}
+        path: ${{env.PUBLISH_PATH}}
+        retention-day: 3
+
+  #============================================================
+  #  DEPLOY STAGE
+  #
+
+  deploy_azure:
+    name: Manually deploy to Azure
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+
+    needs: [publish]    
+    steps:
+
+    - name: Download artifact from publish job
+      uses: actions/download-artifact@v3
+      with:
+        name: ${{env.PUBLISH_ARTIFACT_NAME}}
+
+    - name: Validate directory state
+      run: |
+        du -sh ./*
+
+    - name: Placeholder
+      run: |
+        echo "TBD Deploy"
