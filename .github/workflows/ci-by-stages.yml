@@ -197,7 +197,7 @@ jobs:
       with:
         name: ${{env.PUBLISH_ARTIFACT_NAME}}
         path: ${{env.PUBLISH_PATH}}
-        retention-days: 3
+        retention-days: 1
 
   #============================================================
   #  AZURE DEPLOY
