@@ -67,7 +67,7 @@ jobs:
         echo $BUILD_CACHE_KEY
         echo ${{env.BUILD_CACHE_KEY}}
 
-    - name: Cache the nuget
+    - name: Cache the nuget for the app project
       id: cache-nuget
       uses: actions/cache@v3
       with:
@@ -122,7 +122,7 @@ jobs:
       uses: actions/cache@v3
       with:
         path: nuget
-        key: nuget-${{ hashFiles('*/*.csproj')}}
+        key: ${{env.BUILD_CACHE_KEY}}
 
     - name: Validate directory state
       run: |
@@ -168,12 +168,12 @@ jobs:
       run: |
         du -sh ./*
 
-    - name: Nuget from cache
+    - name: App's nuget from cache
       id: cache-nuget
       uses: actions/cache@v3
       with:
         path: nuget
-        key: nuget-${{ hashFiles('*/*.csproj')}}
+        key: ${{env.BUILD_CACHE_KEY}}
 
     - name: Validate directory state
       run: |
