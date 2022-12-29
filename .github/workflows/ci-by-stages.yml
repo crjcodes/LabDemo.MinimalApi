@@ -30,7 +30,8 @@ env:
     BUILD_PATH: build
     PUBLISH_PATH: publish
     BUILD_CACHE: ${PROJECT}/${PROJECT}.csproj
-    BUILD_CACHE_KEY: nuget-${{ hashFiles(env.BUILD_CACHE)}}
+    TMP: ${{ always() && hashFiles(env.BUILD_CACHE)}}
+    BUILD_CACHE_KEY: nuget-$TMP
 
 
 jobs:
