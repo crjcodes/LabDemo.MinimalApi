@@ -60,12 +60,16 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v3
 
+    - name: Temo check
+      run: |
+        echo '${PROJECT}/${PROJECT}.csproj'
+
     - name: Cache the nuget
       id: cache-nuget
       uses: actions/cache@v3
       with:
         path: nuget
-        key: nuget-${{ hashFiles('*/*.csproj')}}
+        key: nuget-${{ hashFiles('${PROJECT}/${PROJECT}.csproj')}}
 
     - name: Install dependencies
       if: steps.cache-nuget.outpus.cache-hit != true
@@ -81,9 +85,6 @@ jobs:
     - name: Validate directory state
       run: |
         du -sh ./*
-
-    # artifacts are overkill for this small of project, but done as a 
-    # poc and best practice for larger systems
 
     - name: Upload artifact for test and publish jobs
       uses: actions/upload-artifact@v3
