@@ -29,6 +29,9 @@ env:
     PUBLISH_ARTIFACT_NAME: publish
     BUILD_PATH: build
     PUBLISH_PATH: publish
+    BUILD_CACHE: ${PROJECT}/${PROJECT}.csproj
+    BUILD_CACHE_KEY: nuget-${{ hashFiles(env.BUILD_CACHE)}}
+
 
 jobs:
 
@@ -59,12 +62,17 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v3
 
+    - name: Check key
+      run: |
+        echo $BUILD_CACHE_KEY
+        echo ${{env.BUILD_CACHE_KEY}}
+
     - name: Cache the nuget
       id: cache-nuget
       uses: actions/cache@v3
       with:
         path: nuget
-        key: nuget-${{ hashFiles(${PROJECT}/${PROJECT}'.csproj')}}
+        key: ${{env.BUILD_CACHE_KEY}}
 
     - name: Install dependencies
       if: steps.cache-nuget.outpus.cache-hit != true
