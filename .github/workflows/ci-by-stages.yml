@@ -30,9 +30,6 @@ env:
     BUILD_PATH: build
     PUBLISH_PATH: publish
     BUILD_CACHE: ${PROJECT}/${PROJECT}.csproj
-    TMP: ${{ always() && hashFiles(env.BUILD_CACHE)}}
-    BUILD_CACHE_KEY: nuget-$TMP
-
 
 jobs:
 
@@ -73,7 +70,7 @@ jobs:
       uses: actions/cache@v3
       with:
         path: nuget
-        key: ${{env.BUILD_CACHE_KEY}}
+        key: nuget-${{ hashFiles(env.BUILD_CACHE)}}
 
     - name: Install dependencies
       if: steps.cache-nuget.outpus.cache-hit != true
@@ -123,7 +120,7 @@ jobs:
       uses: actions/cache@v3
       with:
         path: nuget
-        key: ${{env.BUILD_CACHE_KEY}}
+        key: nuget-${{ hashFiles(env.BUILD_CACHE)}}
 
     - name: Validate directory state
       run: |
@@ -174,7 +171,7 @@ jobs:
       uses: actions/cache@v3
       with:
         path: nuget
-        key: ${{env.BUILD_CACHE_KEY}}
+        key: nuget-${{ hashFiles(env.BUILD_CACHE)}}
 
     - name: Validate directory state
       run: |
