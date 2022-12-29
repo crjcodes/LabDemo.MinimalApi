@@ -23,11 +23,8 @@ run-name: ${{ github.actor }} is experimenting with GitHub actions 🚀
 on: [push]
 
 env:    
-    SOLUTION: LabDemo.MinimalApi
     PROJECT: LabDemo.MinimalApi
     TEST_PROJECT: LabDemo.MinimalApi.Tests
-    NUGET_SOURCE: https://api.nuget.org/v3/index.json
-    NUGET_PATH: nuget
     BUILD_ARTIFACT_NAME: build
     PUBLISH_ARTIFACT_NAME: publish
     BUILD_PATH: build
@@ -203,8 +200,10 @@ jobs:
         retention-days: 3
 
   #============================================================
-  #  DEPLOY STAGE
+  #  AZURE DEPLOY
   #
+  #  Requires both an app service and an API service pre-configured, and the names must
+  #  match
 
   deploy_azure:
     name: Manually deploy to Azure
@@ -233,7 +232,7 @@ jobs:
 
     - name: Deploy to Azure Web App
       id: deploy-to-webapp
-      uses: azure/webapps-deploy@v2
+      uses: azure/webapps-deploy@v3
       with:
         app-name: 'LabDemo-MinimalApi-Code'
         slot-name: 'Production'

@@ -7,15 +7,19 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LabDemo.MinimalApi", "LabDe
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Documentation", "Documentation", "{17B0B1DE-7B08-4817-8FBC-43C2BF83F9C7}"
 	ProjectSection(SolutionItems) = preProject
+		DEPLOYMENT.md = DEPLOYMENT.md
 		README.md = README.md
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "CI-CD", "CI-CD", "{2649B06E-5C0B-4E96-80A7-9CACE12EF361}"
 	ProjectSection(SolutionItems) = preProject
 		ci = ci
+		.github\workflows\ci-by-stages-deploy-to-azure.yml = .github\workflows\ci-by-stages-deploy-to-azure.yml
+		.github\workflows\ci-by-stages.yml = .github\workflows\ci-by-stages.yml
 		.github\workflows\make-by-stages-with-github-actions.yml = .github\workflows\make-by-stages-with-github-actions.yml
 		.github\workflows\master_labdemo-minimalapi-code.yml = .github\workflows\master_labdemo-minimalapi-code.yml
 		nuget.config = nuget.config
+		.github\workflows\README.md = .github\workflows\README.md
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LabDemo.MinimalApi.Tests", "LabDemo.MinimalApi.Tests\LabDemo.MinimalApi.Tests.csproj", "{FEE0519C-FAA2-4473-9AB6-698162F61E22}"
