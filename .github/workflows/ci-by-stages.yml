@@ -29,7 +29,6 @@ env:
     PUBLISH_ARTIFACT_NAME: publish
     BUILD_PATH: build
     PUBLISH_PATH: publish
-    BUILD_CACHE: ${PROJECT}/${PROJECT}.csproj
 
 jobs:
 
@@ -60,17 +59,12 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v3
 
-    - name: Check key
-      run: |
-        echo $BUILD_CACHE_KEY
-        echo ${{env.BUILD_CACHE_KEY}}
-
     - name: Cache the nuget for the app project
       id: cache-nuget
       uses: actions/cache@v3
       with:
         path: nuget
-        key: nuget-${{ hashFiles(env.BUILD_CACHE)}}
+        key: nuget-${{ hashFiles('LabDemo.MinimalApi/LabDemo.MinimalApi.csproj')}}
 
     - name: Install dependencies
       if: steps.cache-nuget.outpus.cache-hit != true
@@ -120,7 +114,7 @@ jobs:
       uses: actions/cache@v3
       with:
         path: nuget
-        key: nuget-${{ hashFiles(env.BUILD_CACHE)}}
+        key: nuget-${{ hashFiles('LabDemo.MinimalApi/LabDemo.MinimalApi.csproj')}}
 
     - name: Validate directory state
       run: |
@@ -171,7 +165,7 @@ jobs:
       uses: actions/cache@v3
       with:
         path: nuget
-        key: nuget-${{ hashFiles(env.BUILD_CACHE)}}
+        key: nuget-${{ hashFiles('LabDemo.MinimalApi/LabDemo.MinimalApi.csproj')}}
 
     - name: Validate directory state
       run: |
