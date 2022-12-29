@@ -60,9 +60,9 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v3
 
-    - name: Temo check
+    - name: Check Input
       run: |
-        echo '${PROJECT}/${PROJECT}.csproj'
+        echo ${{env.BUILD_CACHE_KEY}}
 
     - name: Cache the nuget
       id: cache-nuget
