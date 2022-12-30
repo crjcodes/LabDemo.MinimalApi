@@ -64,7 +64,7 @@ jobs:
       uses: actions/cache@v3
       with:
         path: nuget
-        key: nuget-${{ hashFiles('LabDemo.MinimalApi/LabDemo.MinimalApi.csproj')}}
+        key: nuget-app-${{ hashFiles('LabDemo.MinimalApi/LabDemo.MinimalApi.csproj')}}
 
     - name: Install dependencies
       if: steps.cache-nuget.outpus.cache-hit != true
