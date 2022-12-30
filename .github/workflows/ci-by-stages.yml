@@ -68,7 +68,7 @@ jobs:
 
     - name: Install dependencies
       if: steps.cache-nuget.outpus.cache-hit != true
-      run: dotnet restore
+      run: dotnet restore $PROJECT/$PROJECT.csproj
 
     - name: Validate directory state
       run: |

@@ -96,10 +96,17 @@ clean()
 {
   echo "$LOG_DIVIDER CLEAN"
   echo 
+  
+  echo "rm -rf nuget;  rm -rf .nuget"
   rm -rf nuget;  rm -rf .nuget
-  rm -rf */bin; rm -rf */obj;
+  
+  echo "rm -rf $PROJECT/bin; rm -rf $PROJECT/obj;"
+  rm -rf $PROJECT/bin; rm -rf $PROJECT/obj;
+
+  echo "rm -rf $TEST_PROJECT/bin; rm -rf $TEST_PROJECT/obj"
+  rm -rf $TEST_PROJECT/bin; rm -rf $TEST_PROJECT/obj;
+  
   rm -rf buildtest; rm -rf build; rm -rf publish
-  rm -rf */bin; rm -rf */obj
   du -sh ./*/
 }
 
