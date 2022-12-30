@@ -81,7 +81,7 @@ all()
 build()
 {
   echo "$LOG_DIVIDER BUILD"
-  dotnet build -c Release --no-incremental -o ./buildtest
+  dotnet build $PROJECT/$PROJECT.csproj -c Release --no-incremental -o ./build
   
   status=$?
 
@@ -96,10 +96,9 @@ clean()
 {
   echo "$LOG_DIVIDER CLEAN"
   echo 
-  rm -rf nuget
+  rm -rf nuget;  rm -rf .nuget
   rm -rf */bin; rm -rf */obj;
-  rm -rf .nuget
-  rm -rf buildtest; rm -rf publish
+  rm -rf buildtest; rm -rf build; rm -rf publish
   rm -rf */bin; rm -rf */obj
   du -sh ./*/
 }
@@ -114,7 +113,7 @@ clean()
 publish()
 {
   echo "$LOG_DIVIDER PUBLISH"
-  dotnet publish -c Release -p:OutDir=./buildtest -o ./publish
+  dotnet publish -c Release -p:OutDir=./build -o ./publish
 
   status=$?
 
@@ -152,7 +151,7 @@ restore()
 restoreBuild()
 {
   echo "$LOG_DIVIDER RESTORE-BUILD"
-  dotnet build -c Release --no-incremental -o ./buildtest 
+  dotnet build $PROJECT/$PROJECT.csproj -c Release --no-incremental -o ./build 
   
   status=$?
 
@@ -166,7 +165,7 @@ restoreBuild()
 test()
 {
   echo "$LOG_DIVIDER TEST"
-  dotnet test $TEST_PROJECT/${TEST_PROJECT}.csproj -c Release --no-restore -o buildtest
+  dotnet test $TEST_PROJECT/${TEST_PROJECT}.csproj -c Release -o build
   
   status=$?
 
