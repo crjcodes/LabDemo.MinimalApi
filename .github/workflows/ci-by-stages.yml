@@ -221,6 +221,7 @@ jobs:
       uses: actions/download-artifact@v3
       with:
         name: ${{env.PUBLISH_ARTIFACT_NAME}}
+        path: ${{env.PUBLISH_PATH}}
 
     - name: Validate directory state
       run: |
@@ -233,4 +234,4 @@ jobs:
         app-name: 'LabDemo-MinimalApi-Code'
         slot-name: 'Production'
         publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_FEB370F5C81A4C1EBA8D302EC1CB0084 }}
-        package: .
+        package: ./publish
