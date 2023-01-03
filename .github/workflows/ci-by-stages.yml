@@ -29,6 +29,21 @@ env:
     PUBLISH_ARTIFACT_NAME: publish
     BUILD_PATH: build
     PUBLISH_PATH: publish
+    AZURE_WEBAPP_NAME: LabDemoAPI
+    AZURE_WEBAPP_PACKAGE_PATH: ${PROJECT}/${BUILD_PATH}
+    AZURE_APIM_RESOURCE_PATH: /
+    AZURE_APIM_RESOURCEGROUP: dev-01
+    AZURE_APIM_SERVICENAME: LabDemoApiService
+    AZURE_APIM_API_ID: LabDemoApi
+    AZURE_APIM_APPSERVICEURL: https://labdemoapi.azurewebsites.net
+    SWASHBUCLE_ASPNET_CORE_CLI_PACKAGE_VERSION: 6.4.0
+    SWASHBUCKLE_DOTNET_CORE_VERSION: 6.4.x
+    API_IMPORT_SPECIFICATION_PATH:  $PUBLISH_PATH/swagger.json
+    API_IMPORT_DLL: $PUBLISH_PATH/LabDemo.MinimalApi.dll
+    API_IMPORT_VERSION: v1
+    CONFIGURATION: Release
+    DOTNET_CORE_VERSION: 7.0.x
+    WORKING_DIRECTORY: $PROJECT
 
 jobs:
 
@@ -184,9 +199,19 @@ jobs:
     - name: Publish the api
       run: dotnet publish $PROJECT/$PROJECT.csproj -c Release -p:OutDir=$BUILD_PATH -o $PUBLISH_PATH
 
+    - name: Install Swashbuckle CLI .NET Global Tool
+      run: dotnet tool install --global Swashbuckle.AspNetCore.Cli --version ${{ env.SWASHBUCLE_ASPNET_CORE_CLI_PACKAGE_VERSION }}
+      working-directory: ${{ env.WORKING_DIRECTORY }}
+
+    - name: Generate Open API Specification Document
+      run: swagger tofile --output "${{ env.PUBLISH_PATH }}/swagger.json" "${{ env.API_IMPORT_DLL }}" "${{ env.API_IMPORT_VERSION }}"
+
     - name: Validate directory state
       run: |
         du -sh ./*
+
+    - name: Manually validate what is published
+      run: ls publish
 
     - name: Upload artifact for deployment
       uses: actions/upload-artifact@v3
@@ -216,7 +241,7 @@ jobs:
 
     needs: [publish]    
     steps:
-
+       
     - name: Download artifact from publish job
       uses: actions/download-artifact@v3
       with:
@@ -233,11 +258,30 @@ jobs:
       run: |
         du -sh ./*
 
-    - name: Deploy to Azure Web App
-      id: deploy-to-webapp
+    - name: Deploy to Azure WebApp
       uses: azure/webapps-deploy@v2
       with:
-        app-name: 'LabDemo-MinimalApi-Code'
-        slot-name: 'Production'
-        publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_FEB370F5C81A4C1EBA8D302EC1CB0084 }}
+        app-name: ${{ env.AZURE_WEBAPP_NAME }}
         package: ./publish
+        publish-profile: ${{ secrets.LabDemoAPI_628F }}
+
+#        package: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
+
+    #- name: Deploy to Azure Web App
+    #  id: deploy-to-webapp
+    #  uses: azure/webapps-deploy@v2
+    #  with:
+    #    app-name: 'LabDemo-MinimalApi-Code'
+    #    slot-name: 'Production'
+    #    publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_FEB370F5C81A4C1EBA8D302EC1CB0084 }}
+    #    package: ./publish
+
+    - name: Azure Login
+      uses: azure/login@v1
+      with:
+        creds: ${{ secrets.LabDemoApiService_SPN }}
+    - name: Import API into Azure API Management
+      run: az apim api import --path "${{ env.AZURE_APIM_RESOURCE_PATH }}" --resource-group "${{ env.AZURE_APIM_RESOURCEGROUP }}" --service-name "${{ env.AZURE_APIM_SERVICENAME }}" --api-id "${{ env.AZURE_APIM_API_ID }}" --service-url "${{ env.AZURE_APIM_APPSERVICEURL }}" --specification-path "${{ env.API_IMPORT_SPECIFICATION_PATH }}" --specification-format OpenApi --subscription-required false
+    - name: logout
+      run: >
+        az logout
