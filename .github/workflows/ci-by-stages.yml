@@ -214,6 +214,7 @@ jobs:
     environment:
       name: production
 
+    needs: [publish]    
     steps:
 
     - name: Download artifact from publish job
