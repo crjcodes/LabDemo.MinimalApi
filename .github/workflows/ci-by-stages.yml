@@ -94,7 +94,7 @@ jobs:
         du -sh ./*
 
     - name: Build just the API subsystem
-      run: dotnet build $PROJECT/$PROJECT.csproj -c Release --no-incremental -o $BUILD_PATH
+      run: dotnet build $PROJECT/$PROJECT.csproj -c Release -o $BUILD_PATH
 
     - name: Validate directory state
       run: |

@@ -81,7 +81,8 @@ all()
 build()
 {
   echo "$LOG_DIVIDER BUILD"
-  dotnet build $PROJECT/$PROJECT.csproj -c Release --no-incremental -o ./build
+
+  dotnet build $PROJECT/$PROJECT.csproj -c Release -o build
   
   status=$?
 
@@ -90,6 +91,7 @@ build()
     echo "$LOG_DIVIDER BUILD FAILED"
     exit $status
   fi
+    
 }
 
 clean()
@@ -120,7 +122,7 @@ clean()
 publish()
 {
   echo "$LOG_DIVIDER PUBLISH"
-  dotnet publish -c Release -p:OutDir=./build -o ./publish
+  dotnet publish $PROJECT/$PROJECT.csproj -c Release -p:OutDir=build -o publish
 
   status=$?
 
@@ -142,7 +144,7 @@ publish()
 restore()
 {
   echo "$LOG_DIVIDER RESTORE"
-  dotnet restore --source $NUGET_SOURCE --packages $NUGET_PATH
+  dotnet restore $PROJECT/$PROJECT.csproj --source $NUGET_SOURCE --packages $NUGET_PATH
   
   status=$?
 
@@ -158,8 +160,9 @@ restore()
 restoreBuild()
 {
   echo "$LOG_DIVIDER RESTORE-BUILD"
-  dotnet build $PROJECT/$PROJECT.csproj -c Release --no-incremental -o ./build 
   
+  dotnet build $PROJECT/$PROJECT.csproj -c Release -o build
+    
   status=$?
 
   if [[ $status -ne 0 ]]
@@ -167,6 +170,7 @@ restoreBuild()
     echo "$LOG_DIVIDER RESTORE-BUILD FAILED"
     exit $status
   fi
+
 }
 
 test()
