@@ -70,6 +70,10 @@ jobs:
         shell: bash
 
     steps:       
+
+    - name: Manually validate version
+      run: |
+        dotnet --version
        
     - name: Checkout
       uses: actions/checkout@v3
@@ -241,6 +245,13 @@ jobs:
 
     needs: [publish]    
     steps:
+
+    - name: Manually validate version
+      run: |
+        dotnet --version
+
+    - name: Install Swashbuckle CLI .NET Global Tool
+      run: dotnet tool install --global Swashbuckle.AspNetCore.Cli --version ${{ env.SWASHBUCLE_ASPNET_CORE_CLI_PACKAGE_VERSION }}
        
     - name: Download artifact from publish job
       uses: actions/download-artifact@v3
@@ -258,12 +269,12 @@ jobs:
       run: |
         du -sh ./*
 
-    - name: Deploy to Azure WebApp
-      uses: azure/webapps-deploy@v2
-      with:
-        app-name: ${{ env.AZURE_WEBAPP_NAME }}
-        package: ./publish
-        publish-profile: ${{ secrets.LabDemoAPI_628F }}
+    #- name: Deploy to Azure WebApp
+    #  uses: azure/webapps-deploy@v2
+    #  with:
+    #    app-name: ${{ env.AZURE_WEBAPP_NAME }}
+    #    package: ./publish
+    #    publish-profile: ${{ secrets.LabDemoAPI_628F }}
 
 #        package: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
 
@@ -276,12 +287,12 @@ jobs:
     #    publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_FEB370F5C81A4C1EBA8D302EC1CB0084 }}
     #    package: ./publish
 
-    - name: Azure Login
-      uses: azure/login@v1
-      with:
-        creds: ${{ secrets.LabDemoApiService_SPN }}
-    - name: Import API into Azure API Management
-      run: az apim api import --path "${{ env.AZURE_APIM_RESOURCE_PATH }}" --resource-group "${{ env.AZURE_APIM_RESOURCEGROUP }}" --service-name "${{ env.AZURE_APIM_SERVICENAME }}" --api-id "${{ env.AZURE_APIM_API_ID }}" --service-url "${{ env.AZURE_APIM_APPSERVICEURL }}" --specification-path "${{ env.API_IMPORT_SPECIFICATION_PATH }}" --specification-format OpenApi --subscription-required false
-    - name: logout
-      run: >
-        az logout
+    #- name: Azure Login
+    #  uses: azure/login@v1
+    #  with:
+    #    creds: ${{ secrets.LabDemoApiService_SPN }}
+    #- name: Import API into Azure API Management
+    #  run: az apim api import --path "${{ env.AZURE_APIM_RESOURCE_PATH }}" --resource-group "${{ env.AZURE_APIM_RESOURCEGROUP }}" --service-name "${{ env.AZURE_APIM_SERVICENAME }}" --api-id "${{ env.AZURE_APIM_API_ID }}" --service-url "${{ env.AZURE_APIM_APPSERVICEURL }}" --specification-path "${{ env.API_IMPORT_SPECIFICATION_PATH }}" --specification-format OpenApi --subscription-required false
+    #- name: logout
+    #  run: >
+    #    az logout
