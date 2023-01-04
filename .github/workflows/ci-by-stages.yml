@@ -205,7 +205,7 @@ jobs:
     - name: Generate Open API Specification Document
       run: |
         cd $PROJECT
-        swagger tofile --output "../${{ env.PUBLISH_PATH }}/swagger.json" "../{{ env.API_IMPORT_DLL }}" "${{ env.API_IMPORT_VERSION }}"
+        swagger tofile --output ../$PUBLISH_PATH/swagger.json ../$PUBLISH_PATH/${PROJECT}.dll "${{ env.API_IMPORT_VERSION }}"
 
     - name: Validate directory state
       run: |
