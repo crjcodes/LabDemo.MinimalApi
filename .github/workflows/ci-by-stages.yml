@@ -186,12 +186,11 @@ jobs:
         path: nuget
         key: nuget-app-${{ hashFiles('LabDemo.MinimalApi/LabDemo.MinimalApi.csproj')}}
 
-    - name: Validate directory state
-      run: |
-        du -sh ./*
-
     - name: Download artifact from build job
       uses: actions/download-artifact@v3
+
+    - name: Install Swashbuckle CLI .NET Global Tool
+      run: dotnet tool install --global Swashbuckle.AspNetCore.Cli --version ${{ env.SWASHBUCLE_ASPNET_CORE_CLI_PACKAGE_VERSION }}
 
     - name: Validate directory state
       run: |
@@ -203,12 +202,10 @@ jobs:
     - name: Publish the api
       run: dotnet publish $PROJECT/$PROJECT.csproj -c Release -p:OutDir=$BUILD_PATH -o $PUBLISH_PATH
 
-    - name: Install Swashbuckle CLI .NET Global Tool
-      run: dotnet tool install --global Swashbuckle.AspNetCore.Cli --version ${{ env.SWASHBUCLE_ASPNET_CORE_CLI_PACKAGE_VERSION }}
-      working-directory: ${{ env.WORKING_DIRECTORY }}
-
     - name: Generate Open API Specification Document
-      run: swagger tofile --output "${{ env.PUBLISH_PATH }}/swagger.json" "${{ env.API_IMPORT_DLL }}" "${{ env.API_IMPORT_VERSION }}"
+      run: |
+        cd $PROJECT
+        swagger tofile --output "../${{ env.PUBLISH_PATH }}/swagger.json" "../{{ env.API_IMPORT_DLL }}" "${{ env.API_IMPORT_VERSION }}"
 
     - name: Validate directory state
       run: |
@@ -249,10 +246,7 @@ jobs:
     - name: Manually validate version
       run: |
         dotnet --version
-
-    - name: Install Swashbuckle CLI .NET Global Tool
-      run: dotnet tool install --global Swashbuckle.AspNetCore.Cli --version ${{ env.SWASHBUCLE_ASPNET_CORE_CLI_PACKAGE_VERSION }}
-       
+      
     - name: Download artifact from publish job
       uses: actions/download-artifact@v3
       with:

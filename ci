@@ -19,6 +19,9 @@ TEST_PROJECT=LabDemo.MinimalApi.Tests
 NUGET_SOURCE=https://api.nuget.org/v3/index.json
 NUGET_PATH=.nuget
 
+PUBLISH=publish
+BUILD=build
+
 LOG_DIVIDER=">>>>>>>>>>>>>>>>>>>>>>>>>>> "
 
 echo "============================================================="
@@ -82,7 +85,7 @@ build()
 {
   echo "$LOG_DIVIDER BUILD"
 
-  dotnet build $PROJECT/$PROJECT.csproj -c Release -o build
+  dotnet build $PROJECT/$PROJECT.csproj -c Release -o $BUILD
   
   status=$?
 
@@ -122,7 +125,7 @@ clean()
 publish()
 {
   echo "$LOG_DIVIDER PUBLISH"
-  dotnet publish $PROJECT/$PROJECT.csproj -c Release -p:OutDir=build -o publish
+  dotnet publish $PROJECT/$PROJECT.csproj -c Release -p:OutDir=$BUILD -o $PUBLISH
 
   status=$?
 
@@ -131,7 +134,10 @@ publish()
     echo "$LOG_DIVIDER PUBLISH FAILED"
     exit $status
   fi
-  
+
+  cd $PROJECT
+  swagger tofile --output "../$PUBLISH/swagger.json" "../$PUBLISH/LabDemo.MinimalApi.dll" "v1"
+        
   du -sh ./*/  
 }
 
