@@ -271,7 +271,7 @@ jobs:
         publish-profile: ${{ secrets.LabDemoAPI_628F }}
 
     - name: Azure Login
-      uses: azure/login@v3
+      uses: azure/login@v2
       with:
         creds: ${{ secrets.LabDemoApiService_SPN }}
 
