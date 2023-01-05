@@ -19,7 +19,7 @@
 #
 
 name: LabDemo.MinimalApi.BuildByStages
-run-name: ${{ github.actor }} is experimenting with GitHub actions 🚀
+run-name: A better CI-CD for a .NET API 🚀
 on: [workflow_dispatch, pull_request, push]
 
 env:    

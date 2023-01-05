@@ -7,6 +7,8 @@ The API is a minimal API approach -- no controllers, just straight up querying t
 
 The Github Actions implement a CI approach in stages -- build, test, publish -- using dotnet CLI commands.
 
+I also used this API as the basis for a series of posts at [CodeOnward.com](https://codeonward.com/category/net/lab-demo/).
+
 ## Tech Used
 
 - .NET 7
@@ -54,9 +56,17 @@ You can emulate the steps taken in the ci yaml by running the bash script `ci` f
 
 ![CI Script](img/ci-script.png)
 
-# Upcoming Features/Issues
+# How to Deploy
 
-TBD - The deployment to Azure is not working yet.
+For deployment to Azure you need
+1.  An Azure account
+1.  Walkthrough the "Publish" menu option for the .NET project in Visual Studio 2022 (alternatives exist, but this is a straightforward way)
+1.  Take the pieces you need from the generated yaml to my deploy-to-azure job and change what's needed
+
+Once you change over to your own Azure, the deploy to Azure requires a manual click.  This is because I've added rules to GitHub for deploying to production.
+
+![Manual Deploy](img/manual_deploy.png)
+![Manual Deploy2](img/manual_deploy2.png)
 
 # The System
 
