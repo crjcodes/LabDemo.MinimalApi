@@ -169,7 +169,7 @@ jobs:
       run:
         shell: bash
 
-    needs: [test]    
+    needs: [build]    
     steps:
 
     - name: Checkout
@@ -240,7 +240,7 @@ jobs:
     environment:
       name: production
 
-    needs: [publish]    
+    needs: [test, publish]    
     steps:
 
     - name: Manually validate version

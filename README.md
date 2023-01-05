@@ -14,6 +14,7 @@ The Github Actions implement a CI approach in stages -- build, test, publish -- 
 - Minimal API
 - GitHub Actions
 - dotnet cli build steps
+- Azure: App Services, API Management
 
 # How To
 ## How to Run
@@ -28,10 +29,10 @@ Just check out the git repository, open the solution in Visual Studio, and run. 
 
 ```"LABWORK_API_URL": "https://localhost:7105"```
 
-1. 1. Follow instructions online to add the OpenApi to the app to call the api
+2. Follow instructions online to add the OpenApi to the app to call the api
     1. After running the API in Swagger, copy the swagger.json to the calling app
     2. In the Solution Explorer (I'm sure there's a command-line, too), through Connected Services, add the file from #1
-2. Then, after NSwag has generated the necessary code from the OpenApi/Swagger json, add code similar to the following:
+3. Then, after NSwag has generated the necessary code from the OpenApi/Swagger json, add code similar to the following:
 
 ```
 var app = builder.Build();
@@ -51,6 +52,7 @@ var labwork = await client.LabRecordsAsync();
 
 You can emulate the steps taken in the ci yaml by running the bash script `ci` from the command line.
 
+![CI Script](img/ci-script.png)
 
 # Upcoming Features/Issues
 
